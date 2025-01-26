@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-US" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="generator" content="VuePress 2.0.0-rc.19" />
+    <meta name="theme" content="VuePress Theme Hope 2.0.0-rc.71" />
+    <style>
+      :root {
+        --vp-c-bg: #fff;
+      }
+
+      [data-theme="dark"] {
+        --vp-c-bg: #1b1b1f;
+      }
+
+      html,
+      body {
+        background: var(--vp-c-bg);
+      }
+    </style>
+    <script>
+      const userMode = localStorage.getItem("vuepress-theme-hope-scheme");
+      const systemDarkMode =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+      if (userMode === "dark" || (userMode !== "light" && systemDarkMode)) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    </script>
+    <meta property="og:url" content="https://mister-hope.github.io/demo/disable.html"><meta property="og:site_name" content="Blog Demo"><meta property="og:title" content="Disabling layout and features"><meta property="og:description" content="You can disable some function and layout on the page by setting the Frontmatter of the page."><meta property="og:type" content="article"><meta property="og:locale" content="en-US"><meta property="og:updated_time" content="2025-01-26T06:30:54.000Z"><meta property="article:tag" content="disable"><meta property="article:modified_time" content="2025-01-26T06:30:54.000Z"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Disabling layout and features","image":[""],"dateModified":"2025-01-26T06:30:54.000Z","author":[{"@type":"Person","name":"Mr.Hope","url":"https://mister-hope.com"}]}</script><title>Disabling layout and features | Blog Demo</title><meta name="description" content="You can disable some function and layout on the page by setting the Frontmatter of the page.">
+    <link rel="preload" href="/assets/style-C2CVLJoD.css" as="style"><link rel="stylesheet" href="/assets/style-C2CVLJoD.css">
+    <link rel="modulepreload" href="/assets/app-DNX1xKos.js"><link rel="modulepreload" href="/assets/disable.html-Cu0APK-0.js"><link rel="modulepreload" href="/assets/plugin-vue_export-helper-DlAUqK2U.js">
+    <link rel="prefetch" href="/assets/index.html-CKQ9rkWl.js" as="script"><link rel="prefetch" href="/assets/intro.html-DHsUbhIJ.js" as="script"><link rel="prefetch" href="/assets/index.html-Dbp1rBqa.js" as="script"><link rel="prefetch" href="/assets/encrypt.html-DmVi0KLQ.js" as="script"><link rel="prefetch" href="/assets/layout.html-ComLUxOT.js" as="script"><link rel="prefetch" href="/assets/markdown.html-DtMa3Yog.js" as="script"><link rel="prefetch" href="/assets/page.html-CFqhoRQ2.js" as="script"><link rel="prefetch" href="/assets/cherry.html-GGrB7pIn.js" as="script"><link rel="prefetch" href="/assets/dragonfruit.html-s_iV5ZS1.js" as="script"><link rel="prefetch" href="/assets/strawberry.html-D3hfB7N9.js" as="script"><link rel="prefetch" href="/assets/tomato.html-BKpa8So0.js" as="script"><link rel="prefetch" href="/assets/1.html-usTXZW_Z.js" as="script"><link rel="prefetch" href="/assets/2.html-Dw96ujTE.js" as="script"><link rel="prefetch" href="/assets/3.html-DkwEg2ax.js" as="script"><link rel="prefetch" href="/assets/4.html-BN7Dhkhn.js" as="script"><link rel="prefetch" href="/assets/1.html-JpLeDKV2.js" as="script"><link rel="prefetch" href="/assets/2.html-BvIZrGo_.js" as="script"><link rel="prefetch" href="/assets/3.html-C4_dj0EL.js" as="script"><link rel="prefetch" href="/assets/4.html-B3I2jLUq.js" as="script"><link rel="prefetch" href="/assets/404.html-CjD0Hk9S.js" as="script"><link rel="prefetch" href="/assets/index.html-C6Dau56l.js" as="script"><link rel="prefetch" href="/assets/index.html-wFfaixvY.js" as="script"><link rel="prefetch" href="/assets/index.html-D2cnmq3R.js" as="script"><link rel="prefetch" href="/assets/index.html-zGfrgMnr.js" as="script"><link rel="prefetch" href="/assets/index.html-agYi3zHQ.js" as="script"><link rel="prefetch" href="/assets/index.html-CK6M9K9P.js" as="script"><link rel="prefetch" href="/assets/index.html-CjDeHBlE.js" as="script"><link rel="prefetch" href="/assets/index.html-5ULa5Ah3.js" as="script"><link rel="prefetch" href="/assets/index.html-C5YKFUEz.js" as="script"><link rel="prefetch" href="/assets/index.html-0z3ZZfWC.js" as="script"><link rel="prefetch" href="/assets/index.html-DhPBJNNe.js" as="script"><link rel="prefetch" href="/assets/index.html-DUTM_YKF.js" as="script"><link rel="prefetch" href="/assets/index.html-CPwe3Hq9.js" as="script"><link rel="prefetch" href="/assets/index.html-DPNUGz8z.js" as="script"><link rel="prefetch" href="/assets/index.html-D-BmC9Yd.js" as="script"><link rel="prefetch" href="/assets/index.html-cGDoGYHN.js" as="script"><link rel="prefetch" href="/assets/index.html-68u83Hz3.js" as="script"><link rel="prefetch" href="/assets/index.html-Cl3bHXSN.js" as="script"><link rel="prefetch" href="/assets/index.html-4Jega_4u.js" as="script"><link rel="prefetch" href="/assets/index.html-RB2-Qygd.js" as="script"><link rel="prefetch" href="/assets/index.html-DBKDGztx.js" as="script"><link rel="prefetch" href="/assets/index.html-ovRHQhJS.js" as="script"><link rel="prefetch" href="/assets/index.html-Csfb8CjJ.js" as="script"><link rel="prefetch" href="/assets/index.html-CDZaE39j.js" as="script"><link rel="prefetch" href="/assets/index.html-VvxAn66y.js" as="script"><link rel="prefetch" href="/assets/index.html-C-d4VnsQ.js" as="script"><link rel="prefetch" href="/assets/index.html-Cyid8QWF.js" as="script"><link rel="prefetch" href="/assets/index.html-CNK5_4cM.js" as="script"><link rel="prefetch" href="/assets/index.html-B8WhpKsI.js" as="script"><link rel="prefetch" href="/assets/photoswipe.esm-CMg0yb1C.js" as="script"><link rel="prefetch" href="/assets/setupDevtools-7MC2TMWH-BaHF8_FD.js" as="script">
+  </head>
+  <body>
+    <div id="app"><!--[--><!--[--><!--[--><span tabindex="-1"></span><a href="#main-content" class="vp-skip-link sr-only">Skip to main content</a><!--]--><div class="theme-container no-navbar no-sidebar external-link-icon has-toc" vp-container><!----><!----><div class="toggle-sidebar-wrapper"><span class="arrow start"></span></div><aside id="sidebar" class="vp-sidebar" vp-sidebar><!----><ul class="vp-sidebar-links"></ul><!----></aside><!--[--><main id="main-content" class="vp-page"><!--[--><!----><!----><nav class="vp-breadcrumb disable"></nav><div class="vp-page-title"><h1><iconify-icon class="vp-icon" icon="fa6-solid:gears" height="1em" sizing="height"></iconify-icon>Disabling layout and features</h1><!----><hr></div><!----><!----><div class="theme-hope-content" vp-content><p>You can disable some function and layout on the page by setting the Frontmatter of the page.</p><!-- more --><p>This page is an demo that disables the following features:</p><ul><li>Navbar</li><li>Sidebar</li><li>Breadcrumb</li><li>Page information</li><li>Contributors</li><li>Edit link</li><li>Update time</li><li>Prev/Next link</li><li>Comment</li><li>Footer</li><li>Back to top button</li></ul></div><!----><footer class="vp-page-meta"><!----><div class="vp-meta-item git-info"><!----><!----></div></footer><!----><!----><!----><!--]--></main><!--]--><!----></div><!--]--><!--[--><!----><!--[--><!--]--><!--]--><!--]--></div>
+    <script type="module" src="/assets/app-DNX1xKos.js" defer></script>
+  </body>
+</html>

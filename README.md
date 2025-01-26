@@ -1,2 +1,0 @@
-# blog
-CZHanoi's Blog
