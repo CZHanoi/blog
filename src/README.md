@@ -3,9 +3,12 @@ home: true
 layout: BlogHome
 icon: house
 title: Blog Home
-heroImage: https://theme-hope-assets.vuejs.press/logo.svg
-heroText: The name of your blog
-tagline: You can put your slogan here
+heroImage: logo.png
+heroImageDark: logoDark.png
+bgImageDark: https://i.miji.bid/2025/01/26/02a305598afb106687751b86f4c3c880.jpeg
+bgImage: https://i.miji.bid/2025/01/26/81a71e3db55e6948132c62ef60bb95f1.jpeg
+heroText: CZHanoi
+tagline: What can I say?
 heroFullScreen: true
 projects:
   - icon: folder-open
