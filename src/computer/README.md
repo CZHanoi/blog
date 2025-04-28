@@ -1,5 +1,5 @@
 ---
-cover: /assets/images/cover2.jpg
+cover: /assets/images/Indonesia.jpg
 icon: pen-to-square
 date: 2022-01-12
 category:
@@ -11,12 +11,4 @@ star: true
 sticky: true
 ---
 
-# Tomato
-
-## Heading 2
-
-Here is the content.
-
-### Heading 3
-
-Here is the content.
+## 
