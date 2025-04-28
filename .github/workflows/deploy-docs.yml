@@ -12,32 +12,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
 
-      # 2️⃣ Node + pnpm 缓存
+      # Node + pnpm + 缓存
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
-          cache-dependency-path: "**/pnpm-lock.yaml"
+          pnpm-version: 8
+          cache: pnpm
+          cache-dependency-path: '**/pnpm-lock.yaml'
 
-      - name: Install Dependencies
-        run: |
-          corepack enable                # 安装并激活 pnpm
-          pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      # 3️⃣ 生成 TaskXX.md ➜ 构建
       - name: Build Docs
-        env: { NODE_OPTIONS: --max_old_space_size=8192 }
+        env:
+          NODE_OPTIONS: --max_old_space_size=8192
         run: |
           pnpm run gen:task
           pnpm run docs:build
           > src/.vuepress/dist/.nojekyll
 
-      # 4️⃣ 部署到 gh-pages (blog_pages)
-      - uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy Docs
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
           branch: blog_pages
