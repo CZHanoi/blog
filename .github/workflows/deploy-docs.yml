@@ -1,5 +1,5 @@
+# .github/workflows/deploy-docs.yml
 name: Deploy Docs
-
 on:
   push:
     branches: [main]
@@ -10,41 +10,31 @@ permissions:
 jobs:
   deploy-gh-pages:
     runs-on: ubuntu-latest
-
     steps:
-      # 1) 拉取代码
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0                 # 如需子模块可再加 submodules: true
+          fetch-depth: 0
 
-      # 2) 安装 Node，并开启 pnpm 缓存
-      - name: Setup Node.js
+      - name: Setup Node.js + pnpm
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm                    # 关键：告诉它用 pnpm 的锁文件
-          cache-dependency-path: |
-            pnpm-lock.yaml               # 多 repo 可写成 **/pnpm-lock.yaml
+          cache: pnpm            # ← 改成 pnpm
+      - name: Install pnpm
+        run: corepack enable && pnpm --version   # corepack 会自动安装 pnpm 8+
 
-      # 3) 安装依赖
-      - name: Install Deps
-        run: |
-          corepack enable                # GitHub runner 自带 corepack
-          pnpm install --frozen-lockfile # 和本地保持一致
+      - name: Install deps
+        run: pnpm install --frozen-lockfile      # 读取 pnpm-lock.yaml
 
-      # 4) 构建文档
       - name: Build Docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
-        run: |
-          pnpm run docs:build
-          > src/.vuepress/dist/.nojekyll # 阻止 GitHub Pages 对 _ 开头文件特殊处理
+        run: pnpm docs:build && touch src/.vuepress/dist/.nojekyll
 
-      # 5) 部署到 gh-pages
       - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }} # 也可以直接用 secrets.GITHUB_TOKEN
+          token: ${{ secrets.ACCESS_TOKEN }}
           branch: blog_pages
           folder: src/.vuepress/dist
