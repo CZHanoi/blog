@@ -12,30 +12,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ 拉代码
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Node + pnpm + 缓存
+      # 2️⃣ Node (只提供 node，可选 cache=’npm’ 保 npm 缓存，但咱们用 pnpm)
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          pnpm-version: 8
-          cache: pnpm
-          cache-dependency-path: '**/pnpm-lock.yaml'
 
+      # 3️⃣ 安装并缓存 pnpm
+      - uses: pnpm/action-setup@v2          # ← 官方 pnpm Action
+        with:
+          version: 8                        # 选择 pnpm 版本
+          run_install: false                # 仅安装，不自动 pnpm install
+          cache: true                       # 自动缓存 ~/.pnpm-store
+
+      # 4️⃣ 装依赖
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Docs
+      # 5️⃣ 生成 TaskXX.md ➜ 构建
+      - name: Build docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
         run: |
-          pnpm run gen:task
+          pnpm run gen:task        # scripts/gen-task-md.js
           pnpm run docs:build
           > src/.vuepress/dist/.nojekyll
 
-      - name: Deploy Docs
+      # 6️⃣ 部署到 blog_pages
+      - name: Deploy docs
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
