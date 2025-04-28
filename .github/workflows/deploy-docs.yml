@@ -1,52 +1,41 @@
-# .github/workflows/deploy-docs.yml
 name: Deploy Docs
 on:
-  push:
-    branches: [main]
-
-permissions:
-  contents: write
+  push: { branches: [main] }
 
 jobs:
-  deploy-gh-pages:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. Checkout
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # 2. 安装 Node（不再启用 cache: pnpm）
       - uses: actions/setup-node@v4
         with:
-          node-version: 22            # 只负责装 Node，本身不碰 pnpm
+          node-version: 22
 
-      # 3. 安装 + 缓存 pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
-          version: 8                  # 指定 pnpm 主版本
-          run_install: false          # 先别自动装依赖
+          version: 9
+          run_install: false
 
-      # 4. 依赖缓存（可选，但最常见）
+      # (可选) 新 cache key，防旧缓存
       - name: Cache pnpm store
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.pnpm-store             # pnpm 缓存目录
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
 
-      # 5. 安装依赖
-      - run: pnpm install --frozen-lockfile
+      # DEBUG —— 看看 CI 拿到的锁文件是啥
+      - name: Debug | show lockfile header
+        run: head -n 15 pnpm-lock.yaml || true
 
-      # 6. Build Docs
-      - env:
-          NODE_OPTIONS: --max_old_space_size=8192
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Docs
+        env: { NODE_OPTIONS: --max_old_space_size=8192 }
         run: pnpm docs:build && touch src/.vuepress/dist/.nojekyll
 
-      # 7. Deploy
       - uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
