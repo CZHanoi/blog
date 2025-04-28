@@ -1,0 +1,141 @@
+ID,English Name,Chinese Name,Source Country,Retired
+1,Damrey,达维,Cambodia,FALSE
+2,Haikui,海葵,China,TRUE
+3,Kirogi,鸿雁,North Korea,FALSE
+4,Yun-yeung,鸳鸯,Hong Kong,FALSE
+5,Koinu,小犬,Japan,FALSE
+6,Bolaven,布拉万,Laos,FALSE
+7,Sanba,三巴,Macau,FALSE
+8,Jelawat,杰拉华,Malaysia,FALSE
+9,Ewiniar,艾云尼,Micronesia,TRUE
+10,Maliksi,马力斯,Philippines,FALSE
+11,Gaemi,格美,South Korea,FALSE
+12,Prapiroon,派比安,Thailand,FALSE
+13,Maria,玛莉亚,United States,FALSE
+14,Son-Tinh,山神,Vietnam,FALSE
+15,Ampil,安比,Cambodia,FALSE
+16,Wukong,悟空,China,FALSE
+17,Jongdari,云雀,North Korea,FALSE
+18,Shanshan,珊珊,Hong Kong,FALSE
+19,Yagi,摩羯,Japan,TRUE
+20,Leepi,丽琵,Laos,FALSE
+21,Bebinca,贝碧嘉,Macau,FALSE
+22,Pulasan,普拉桑,Malaysia,FALSE
+23,Soulik,苏力,Micronesia,FALSE
+24,Cimaron,西马仑,Philippines,FALSE
+25,Jebi,飞燕,South Korea,TRUE
+26,Krathon,山陀儿,Thailand,TRUE
+27,Barijat,百里嘉,United States,FALSE
+28,Trami,潭美,Vietnam,TRUE
+29,Kong-rey,康妮,Cambodia,TRUE
+30,Yinxing,银杏,China,FALSE
+31,Toraji,桃芝,North Korea,TRUE
+32,Man-yi,万宜,Hong Kong,TRUE
+33,Usagi,天兔,Japan,TRUE
+34,Pabuk,帕布,Laos,FALSE
+35,Wutip,蝴蝶,Macau,FALSE
+36,Sepat,圣帕,Malaysia,FALSE
+37,Mun,木恩,Micronesia,FALSE
+38,Danas,丹娜丝,Philippines,FALSE
+39,Nari,百合,South Korea,FALSE
+40,Wipha,韦帕,Thailand,FALSE
+41,Francisco,范斯高,United States,FALSE
+42,Co-may,竹节草,Vietnam,FALSE
+43,Krosa,罗莎,Cambodia,FALSE
+44,Bailu,白鹿,China,FALSE
+45,Podul,杨柳,North Korea,FALSE
+46,Lingling,玲玲,Hong Kong,FALSE
+47,Kajiki,剑鱼,Japan,FALSE
+48,Nongfa,蓝湖,Laos,FALSE
+49,Peipah,琵琶,Macau,FALSE
+50,Tapah,塔巴,Malaysia,FALSE
+51,Mitag,米娜,Micronesia,FALSE
+52,Ragasa,桦加沙,Philippines,FALSE
+53,Neoguri,浣熊,South Korea,FALSE
+54,Bualoi,博罗依,Thailand,FALSE
+55,Matmo,麦德姆,United States,FALSE
+56,Halong,夏浪,Vietnam,FALSE
+57,Nakri,娜基莉,Cambodia,FALSE
+58,Fengshen,风神,China,FALSE
+59,Kalmaegi,海鸥,North Korea,FALSE
+60,Fung-wong,凤凰,Hong Kong,FALSE
+61,Koto,天琴,Japan,FALSE
+62,Nokaen,洛鞍,Laos,FALSE
+63,Penha,西望洋,Macau,FALSE
+64,Nuri,鹦鹉,Malaysia,FALSE
+65,Sinlaku,森拉克,Micronesia,FALSE
+66,Hagupit,黑格比,Philippines,FALSE
+67,Jangmi,蔷薇,South Korea,FALSE
+68,Mekkhala,米克拉,Thailand,FALSE
+69,Higos,海高斯,United States,FALSE
+70,Bavi,巴威,Vietnam,FALSE
+71,Maysak,美莎克,Cambodia,FALSE
+72,Haishen,海神,China,FALSE
+73,Noul,红霞,North Korea,FALSE
+74,Dolphin,白海豚,Hong Kong,FALSE
+75,Kujira,鲸鱼,Japan,FALSE
+76,Chan-hom,灿鸿,Laos,FALSE
+77,Peilou,琵鹭,Macau,FALSE
+78,Nangka,浪卡,Malaysia,FALSE
+79,Saudel,沙德尔,Micronesia,FALSE
+80,Narra,紫檀,Philippines,FALSE
+81,Gaenari,简拉维,South Korea,FALSE
+82,Atsani,艾莎尼,Thailand,FALSE
+83,Etau,艾涛,United States,FALSE
+84,Bang-lang,班朗,Vietnam,FALSE
+85,Krovanh,科罗旺,Cambodia,FALSE
+86,Dujuan,杜鹃,China,FALSE
+87,Surigae,舒力基,North Korea,FALSE
+88,Choi-wan,彩云,Hong Kong,FALSE
+89,Koguma,小熊,Japan,FALSE
+90,Champi,蔷琵,Laos,FALSE
+91,In-Fa,烟花,Macau,FALSE
+92,Cempaka,查帕卡,Malaysia,FALSE
+93,Nepartak,尼伯特,Micronesia,FALSE
+94,Lupit,卢碧,Philippines,FALSE
+95,Mirinae,银河,South Korea,FALSE
+96,Nida,妮妲,Thailand,FALSE
+97,Omais,奥麦斯,United States,FALSE
+98,Luc-Binh,浮莲,Vietnam,FALSE
+99,Chanthu,灿都,Cambodia,FALSE
+100,Dianmu,电母,China,FALSE
+101,Mindulle,蒲公英,North Korea,FALSE
+102,Lionrock,狮子山,Hong Kong,FALSE
+103,Tokei,道玑,Japan,FALSE
+104,Namtheun,南川,Laos,FALSE
+105,Malou,玛瑙,Macau,FALSE
+106,Nyatoh,妮亚图,Malaysia,FALSE
+107,Sarbul,沙布尔,Micronesia,FALSE
+108,Amuyao,阿穆丘,Philippines,FALSE
+109,Gosari,古莎莉,South Korea,FALSE
+110,Chaba,暹芭,Thailand,FALSE
+111,Aere,艾利,United States,FALSE
+112,Songda,桑达,Vietnam,FALSE
+113,Trases,翠丝,Cambodia,FALSE
+114,Mulan,木兰,China,FALSE
+115,Meari,米雷,North Korea,FALSE
+116,Tsing-ma,青马,Hong Kong,FALSE
+117,Tokage,蝎虎,Japan,FALSE
+118,Ong-mang,坡鹿,Laos,FALSE
+119,Muifa,梅花,Macau,FALSE
+120,Merbok,苗柏,Malaysia,FALSE
+121,Nanmadol,南玛都,Micronesia,FALSE
+122,Talas,塔拉斯,Philippines,FALSE
+123,Hodu,核桃,South Korea,FALSE
+124,Kulap,玫瑰,Thailand,FALSE
+125,Roke,洛克,United States,FALSE
+126,Sonca,桑卡,Vietnam,FALSE
+127,Nesat,纳沙,Cambodia,FALSE
+128,Haitang,海棠,China,FALSE
+129,Jamjari,蜻蜓,North Korea,FALSE
+130,Banyan,榕树,Hong Kong,FALSE
+131,Yamaneko,山猫,Japan,FALSE
+132,Pakhar,帕卡,Laos,FALSE
+133,Sanvu,珊瑚,Macau,FALSE
+134,Mawar,玛娃,Malaysia,FALSE
+135,Guchol,古超,Micronesia,FALSE
+136,Talim,泰利,Philippines,FALSE
+137,Doksuri,杜苏芮,South Korea,TRUE
+138,Khanun,卡努,Thailand,FALSE
+139,Lan,兰恩,United States,FALSE
+140,Saola,苏拉,Vietnam,TRUE
