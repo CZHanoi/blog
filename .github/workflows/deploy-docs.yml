@@ -1,9 +1,9 @@
-# .github/workflows/deploy-docs.yml
 name: Deploy Docs
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,39 +11,39 @@ permissions:
 jobs:
   deploy-gh-pages:
     runs-on: ubuntu-latest
-
     steps:
-      # 1 ── 拉取代码
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # if your docs needs submodules, uncomment the following line
+          # submodules: true
 
-      # 2 ── 配置 Node.js + pnpm 缓存
+
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
-      # 3 ── 安装依赖
-      - name: Install dependencies
+      - name: Install Deps
         run: |
-          corepack enable          # 自动启用 pnpm
-          pnpm install --frozen-lockfile
+          corepack enable
+          npm ci
 
-      # 4 ── 构建文档
-      - name: Build docs
+      - name: Build Docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
-        run: |
-          pnpm run docs:build
-          > src/.vuepress/dist/.nojekyll     # 让 GitHub Pages 跳过 Jekyll 处理
+        run: |-
+          npm run docs:build
+          > src/.vuepress/dist/.nojekyll
 
-      # 5 ── 部署到 GitHub Pages
-      - name: Deploy to GitHub Pages
+      - name: Deploy Docs
         uses: JamesIves/github-pages-deploy-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}  # 或直接使用内置 ${{ secrets.GITHUB_TOKEN }}
-          branch: blog_pages                  # 部署分支
-          folder: src/.vuepress/dist          # 构建产物目录
+          # Deploy Docs
+          branch: blog_pages
+          folder: src/.vuepress/dist
