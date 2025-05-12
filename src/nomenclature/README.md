@@ -5,6 +5,7 @@ sidebar: false
 sidebarDepth: 0
 breadcrumb: false
 toc: false
+article: false
 ---
 
 <ClientOnly>

@@ -10,43 +10,23 @@ bgImage: https://i.miji.bid/2025/01/26/81a71e3db55e6948132c62ef60bb95f1.jpeg
 heroText: CZHanoi
 tagline: What can I say?
 heroFullScreen: true
+
 projects:
-  - icon: folder-open
-    name: project name
-    desc: project detailed description
-    link: https://your.project.link
+  - icon: fa6-solid:atom
+    name: residue-residue contact score (RRCS)
+    desc: An accurate metric for detecting subtle conformational dynamics tools
+    link: https://doi.org/10.1016/j.jmb.2025.169129
 
-  - icon: link
-    name: link name
-    desc: link detailed description
-    link: https://link.address
-
-  - icon: book
-    name: book name
-    desc: Detailed description of the book
-    link: https://link.to.your.book
-
-  - icon: newspaper
-    name: article name
-    desc: Detailed description of the article
-    link: https://link.to.your.article
-
-  - icon: user-group
-    name: friend name
-    desc: Detailed description of friend
-    link: https://link.to.your.friend
-
-  - icon: https://theme-hope-assets.vuejs.press/logo.svg
-    name: custom item
-    desc: Detailed description of this custom item
-    link: https://link.to.your.friend
+  - icon: fa6-solid:hurricane
+    name: Typhoon Season Animator
+    desc: Generate animated videos of typhoon seasons
+    link: https://github.com/czhanoi/hanuman
 
 footer: Pending
 ---
 
-This is a blog home page demo.
-
-To use this layout, you should set both `layout: BlogHome` and `home: true` in the page front matter.
-
-For related configuration docs, please see [blog homepage](https://theme-hope.vuejs.press/guide/blog/home.html).
-
+<blockquote style="font-style: italic; font-size: 1.4rem; margin-top: 10px; color: #555;">
+    "Let me not then die ingloriously and without a struggle, but let me first do some great thing that shall be told among men hereafter."
+    <br>
+    <span style="font-size: 0.9rem; color: #777;">— Homer, <em>The Iliad</em>, Book 22</span>
+</blockquote>
