@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch, computed, onMounted } from "vue";
 import { withBase } from "vuepress/client";
-import { loadWeek, saveWeek, WeekTasks } from "../../nomenclature/taskStore";
+import { loadWeek, WeekTasks } from "../../nomenclature/taskStore";
 
 /* ───── ① 计数 & 时间 ───── */
 const base = new Date("2004-09-05T00:00:00Z");
@@ -30,41 +30,32 @@ const ty     = computed(() => tyMap.value[  parts.value.Y             ] ?? { cn:
 const tyPrev = computed(() => tyMap.value[ (parts.value.Y + 139) % 140] ?? { cn: "未知", en: "Unknown", retired: false });
 const tyNext = computed(() => tyMap.value[ (parts.value.Y +   1) % 140] ?? { cn: "未知", en: "Unknown", retired: false });
 
-/* ───── ③ 任务存储 ───── */
+/* ───── ③ 任务 ───── */
 const weekIdx = ref(parts.value.Y);
 const tasks: WeekTasks = reactive(loadWeek(weekIdx.value));
 
-watch(() => ({ ...tasks }), v => saveWeek(weekIdx.value, v), { deep: true });
-
 const input = ref("");
-function add() {
-  if (!input.value.trim()) return;
-  tasks.curr.unshift({ txt: input.value.trim(), done: false });
-  input.value = "";
-}
-function toggle(list: "prev" | "curr" | "next", i: number) { tasks[list][i].done = !tasks[list][i].done; }
-function remove(list: "prev" | "curr" | "next", i: number) { tasks[list].splice(i, 1); }
+function add() { if (!input.value.trim()) return; tasks.curr.unshift({ txt: input.value.trim(), done: false }); input.value = ""; }
+function toggle(list: keyof WeekTasks, i: number) { tasks[list][i].done = !tasks[list][i].done; }
+function remove(list: keyof WeekTasks, i: number) { tasks[list].splice(i, 1); }
 
 /* ───── ④ 折叠列宽 ───── */
 const L = ref(false), R = ref(false);
 function tog(w: "L" | "R") { w === "L" ? (L.value = !L.value, R.value = false) : (R.value = !R.value, L.value = false); }
 const grid = computed(() => L.value ? "3fr 1fr 1fr" : R.value ? "1fr 1fr 3fr" : "1fr 3fr 1fr");
 
-/* ───── ⑤ 跨周迁移（与此前版本相同） ───── */
+/* ───── ⑤ 跨周迁移 ───── */
 watch(() => parts.value.Y, (newY, oldY) => {
   if (newY === oldY) return;
-  saveWeek(weekIdx.value, { prev: [...tasks.prev], curr: [...tasks.curr], next: [...tasks.next] });
+  const prevWeekData = JSON.parse(JSON.stringify(tasks));
   const loaded = loadWeek(newY);
   if (loaded.prev.length === 0 && loaded.curr.length === 0 && loaded.next.length === 0) {
-    loaded.prev = [...tasks.curr];
-    loaded.curr = [...tasks.next];
+    loaded.prev = prevWeekData.curr;
+    loaded.curr = prevWeekData.next;
     loaded.next = [];
-    saveWeek(newY, loaded);
   }
   weekIdx.value = newY;
-  tasks.prev = loaded.prev;
-  tasks.curr = loaded.curr;
-  tasks.next = loaded.next;
+  tasks.prev = loaded.prev; tasks.curr = loaded.curr; tasks.next = loaded.next;
 });
 </script>
 
@@ -86,14 +77,14 @@ watch(() => parts.value.Y, (newY, oldY) => {
   </section>
 
   <section class="boards" :style="{ gridTemplateColumns: grid }">
-    <aside class="card prev" @dblclick="tog('L')">
+    <aside class="card prev"   @dblclick="tog('L')">
       <h3 :class="{ ret: tyPrev.retired }">{{ tyPrev.cn }}</h3>
       <ul>
-        <li v-for="(t, i) in tasks.prev" :key="i">
-          <span :class="{ done: t.done }">{{ t.txt }}</span>
+        <li v-for="(t,i) in tasks.prev" :key="i">
+          <span :class="{ done:t.done }">{{ t.txt }}</span>
           <div class="btns">
-            <button @click="toggle('prev', i)">✅</button>
-            <button @click="remove('prev', i)">🗑</button>
+            <button @click="toggle('prev',i)">✅</button>
+            <button @click="remove('prev',i)">🗑</button>
           </div>
         </li>
       </ul>
@@ -105,24 +96,24 @@ watch(() => parts.value.Y, (newY, oldY) => {
         <input v-model="input" placeholder="新任务…" /><button type="submit">＋</button>
       </form>
       <ul>
-        <li v-for="(t, i) in tasks.curr" :key="i">
-          <span :class="{ done: t.done }">{{ t.txt }}</span>
+        <li v-for="(t,i) in tasks.curr" :key="i">
+          <span :class="{ done:t.done }">{{ t.txt }}</span>
           <div class="btns">
-            <button @click="toggle('curr', i)">✅</button>
-            <button @click="remove('curr', i)">🗑</button>
+            <button @click="toggle('curr',i)">✅</button>
+            <button @click="remove('curr',i)">🗑</button>
           </div>
         </li>
       </ul>
     </main>
 
-    <aside class="card next" @dblclick="tog('R')">
+    <aside class="card next"   @dblclick="tog('R')">
       <h3 :class="{ ret: tyNext.retired }">{{ tyNext.cn }}</h3>
       <ul>
-        <li v-for="(t, i) in tasks.next" :key="i">
-          <span :class="{ done: t.done }">{{ t.txt }}</span>
+        <li v-for="(t,i) in tasks.next" :key="i">
+          <span :class="{ done:t.done }">{{ t.txt }}</span>
           <div class="btns">
-            <button @click="toggle('next', i)">✅</button>
-            <button @click="remove('next', i)">🗑</button>
+            <button @click="toggle('next',i)">✅</button>
+            <button @click="remove('next',i)">🗑</button>
           </div>
         </li>
       </ul>

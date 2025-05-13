@@ -1,15 +1,30 @@
+// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-/*  <<< 把这里替换成你的 Firebase Web-App 配置 >>>  */
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID",
+  apiKey: "AIzaSyCNKn3Vv6a8t1ED_suSFlkjs9t5CKFEczs",
+  authDomain: "blogczh.firebaseapp.com",
+  projectId: "blogczh",
+  storageBucket: "blogczh.firebasestorage.app",
+  messagingSenderId: "138673168059",
+  appId: "1:138673168059:web:2b8d484a7f43842524139e",
+  measurementId: "G-64EW6CCBF6"
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export let remoteEnabled = true;
+let db_: ReturnType<typeof getFirestore> | null = null;
+
+try {
+  const app = initializeApp(firebaseConfig);
+  db_ = getFirestore(app);
+} catch (e) {
+  console.warn("[nomenclature] Firebase init failed, fallback to local only.", e);
+  remoteEnabled = false;
+}
+
+export const db = db_;
