@@ -21,7 +21,6 @@ article: false
         <br><br>
     </div>
 </div>
-
 <br>
 
 ## Author
@@ -64,7 +63,7 @@ CCI: cell–cell interaction
 
 | Input |                            Output                            |
 | :---: | :----------------------------------------------------------: |
-|       | cell identity,RNA velocity, GRNs, CCI, </br>relationships between chromatin accessibility and transcriptome data |
+|       | cell identity,RNA velocity, GRNs, CCI, relationships between chromatin accessibility and transcriptome data |
 
 
 
