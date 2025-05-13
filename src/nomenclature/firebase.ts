@@ -1,40 +1,25 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-/* -------- 读取并校验环境变量 -------- */
-const configKeys = [
-  "VITE_FIREBASE_API_KEY",
-  "VITE_FIREBASE_AUTH_DOMAIN",
-  "VITE_FIREBASE_PROJECT_ID",
-  "VITE_FIREBASE_STORAGE_BUCKET",
-  "VITE_FIREBASE_MESSAGING_SENDER_ID",
-  "VITE_FIREBASE_APP_ID",
-] as const;
+/* 读取 Vite 环境变量（注：必须以 VITE_ 前缀） */
+const firebaseConfig = {
+  apiKey:               import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:           import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:            import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:        import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId:    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:                import.meta.env.VITE_FIREBASE_APP_ID,
+};
 
-const firebaseConfig: Record<string,string> = {};
-const missing: string[] = [];
-
-for (const k of configKeys) {
-  const v = import.meta.env[k];
-  if (!v) missing.push(k);
-  firebaseConfig[k.replace("VITE_", "").toLowerCase()] = v;
-}
-
-/* -------- 初始化 / 回退 -------- */
-export let remoteEnabled = missing.length === 0;
+export let remoteEnabled = true;
 let db_: ReturnType<typeof getFirestore> | null = null;
 
-if (remoteEnabled) {
-  try {
-    const app = initializeApp(firebaseConfig);
-    db_ = getFirestore(app);
-    console.info("[nomenclature] Firebase connected");
-  } catch (e) {
-    console.error("[nomenclature] Firebase init failed:", e);
-    remoteEnabled = false;
-  }
-} else {
-  console.warn(`[nomenclature] Firebase disabled; missing env: ${missing.join(", ")}`);
+try {
+  const app = initializeApp(firebaseConfig);
+  db_ = getFirestore(app);
+} catch (e) {
+  console.warn("[nomenclature] Firebase init failed, fallback to local only.", e);
+  remoteEnabled = false;
 }
 
 export const db = db_;
