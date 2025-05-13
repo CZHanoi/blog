@@ -1,9 +1,9 @@
-/* 双通道数据层：
-   ─ localStorage：离线 & 跨路由立即可用
-   ─ Firestore    ：多端实时同步（避免首次“把空数组推上去”）
+/* 数据源：
+   ─ localStorage：离线与路由跳转立即可用
+   ─ Firestore    ：多端实时同步（首帧不再把空数组写上去）
 */
 
-import { reactive, watchEffect } from "vue";
+import { reactive, watch } from "vue";
 import {
   doc, getDoc, setDoc, onSnapshot
 } from "firebase/firestore";
@@ -26,26 +26,25 @@ export interface WeekTasks { prev: Task[]; curr: Task[]; next: Task[]; }
 
 /* ---------- 主函数 ---------- */
 export function loadWeek(week: number): WeekTasks {
-  /* —— 1. 本地初始化 —— */
+  /* 1. 本地初始化 */
   const all = loadLocal();
   if (!all[week]) all[week] = { prev: [], curr: [], next: [] };
 
   const local = reactive(all[week]);
 
-  /* 本地 → localStorage */
-  watchEffect(() => {
-    const latest = loadLocal();
-    latest[week] = JSON.parse(JSON.stringify(local));
-    saveLocal(latest);
-  });
+  /* 本地 → localStorage（深度同步） */
+  watch(local, (val) => {
+    const cache = loadLocal();
+    cache[week] = JSON.parse(JSON.stringify(val));
+    saveLocal(cache);
+  }, { deep:true, immediate:true });
 
-  /* —— 2. Firestore 双向同步（含首次保护） —— */
+  /* 2. Firestore 双向（可选） */
   if (remoteEnabled && db) {
     const ref = doc(db, "weeks", `week-${week}`);
+    let remoteReady = false;
 
-    let remoteReady = false;   // <<< 首次禁止写入
-
-    /* 2-1 远端 → 本地 (实时) */
+    /* 2-1 远端 → 本地（实时）*/
     onSnapshot(ref, snap => {
       if (!snap.exists()) return;
       const remote = snap.data() as WeekTasks;
@@ -54,22 +53,26 @@ export function loadWeek(week: number): WeekTasks {
       local.next.splice(0, local.next.length, ...remote.next);
     });
 
-    /* 2-2 首次取远端 */
+    /* 2-2 首次拉取 */
     getDoc(ref).then(snap => {
       if (snap.exists()) {
-        Object.assign(local, snap.data() as WeekTasks);  // 覆盖本地空数组
+        Object.assign(local, snap.data() as WeekTasks);
       } else {
-        // 远端不存在 → 上传本地初始（空或有默认值）
+        // 远端不存在 → 上传本地初始（可能为空，也可能已有默认任务）
         setDoc(ref, JSON.parse(JSON.stringify(local)));
       }
-      remoteReady = true;       // 开启写入
+      remoteReady = true;
+
+      /* **关键**：拉取完成后，再把当前本地状态推到远端，
+         以防用户在 remoteReady=false 期间做过编辑 */
+      setDoc(ref, JSON.parse(JSON.stringify(local)), { merge:true });
     });
 
-    /* 2-3 本地变更 → 远端（需 remoteReady） */
-    watchEffect(() => {
-      if (!remoteReady) return;                           // <-- 防止首帧误写
-      setDoc(ref, JSON.parse(JSON.stringify(local)), { merge: true });
-    });
+    /* 2-3 本地变化 → 远端 */
+    watch(local, (val) => {
+      if (!remoteReady) return;
+      setDoc(ref, JSON.parse(JSON.stringify(val)), { merge:true });
+    }, { deep:true });
   }
 
   return local;
