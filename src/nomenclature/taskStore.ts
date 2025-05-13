@@ -1,6 +1,6 @@
 /* 双通道数据层：
-     ─ localStorage：离线 & 跨路由立即可用
-     ─ Firestore    ：多端实时同步（可断网后自动追赶）
+   ─ localStorage：离线 & 跨路由立即可用
+   ─ Firestore    ：多端实时同步（避免首次“把空数组推上去”）
 */
 
 import { reactive, watchEffect } from "vue";
@@ -26,30 +26,26 @@ export interface WeekTasks { prev: Task[]; curr: Task[]; next: Task[]; }
 
 /* ---------- 主函数 ---------- */
 export function loadWeek(week: number): WeekTasks {
+  /* —— 1. 本地初始化 —— */
   const all = loadLocal();
   if (!all[week]) all[week] = { prev: [], curr: [], next: [] };
 
-  // 用 reactive 包装，让组件直接使用
   const local = reactive(all[week]);
 
-  /* —— 保存到 localStorage —— */
+  /* 本地 → localStorage */
   watchEffect(() => {
     const latest = loadLocal();
     latest[week] = JSON.parse(JSON.stringify(local));
     saveLocal(latest);
   });
 
-  /* —— 远端 Firestore（可选） —— */
+  /* —— 2. Firestore 双向同步（含首次保护） —— */
   if (remoteEnabled && db) {
     const ref = doc(db, "weeks", `week-${week}`);
 
-    // 1) 首次同步：若远端不存在则上传本地；存在则覆盖本地
-    getDoc(ref).then(snap => {
-      if (snap.exists()) Object.assign(local, snap.data() as WeekTasks);
-      else setDoc(ref, local);                     // merge = false 首次写入
-    });
+    let remoteReady = false;   // <<< 首次禁止写入
 
-    // 2) 实时订阅远端 → 本地
+    /* 2-1 远端 → 本地 (实时) */
     onSnapshot(ref, snap => {
       if (!snap.exists()) return;
       const remote = snap.data() as WeekTasks;
@@ -58,8 +54,20 @@ export function loadWeek(week: number): WeekTasks {
       local.next.splice(0, local.next.length, ...remote.next);
     });
 
-    // 3) 本地变化 → 远端
+    /* 2-2 首次取远端 */
+    getDoc(ref).then(snap => {
+      if (snap.exists()) {
+        Object.assign(local, snap.data() as WeekTasks);  // 覆盖本地空数组
+      } else {
+        // 远端不存在 → 上传本地初始（空或有默认值）
+        setDoc(ref, JSON.parse(JSON.stringify(local)));
+      }
+      remoteReady = true;       // 开启写入
+    });
+
+    /* 2-3 本地变更 → 远端（需 remoteReady） */
     watchEffect(() => {
+      if (!remoteReady) return;                           // <-- 防止首帧误写
       setDoc(ref, JSON.parse(JSON.stringify(local)), { merge: true });
     });
   }
