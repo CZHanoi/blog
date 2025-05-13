@@ -1,43 +1,52 @@
 name: Deploy Docs
+
 on:
-  push: { branches: [main] }
+  push:
+    branches: [main]        # 监听 main 分支
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
+    # 1) 统一在 job 层注入 Firebase & Node 变量
+    env:
+      VITE_FIREBASE_API_KEY:             ${{ secrets.VITE_FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN:         ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID:          ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET:      ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID:              ${{ secrets.VITE_FIREBASE_APP_ID }}
+      NODE_OPTIONS: --max_old_space_size=8192   # 避免内存不足
+
     steps:
+      # 2) 拉取源码
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
+      # 3) 配置 pnpm + Node，并自动开启 pnpm 缓存
       - uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
 
-      # (可选) 新 cache key，防旧缓存
-      - name: Cache pnpm store
-        uses: actions/cache@v3
+      - uses: actions/setup-node@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: ${{ runner.os }}-pnpm-
+          node-version: 22
+          cache: pnpm                  # 等同你手动写 cache 步骤
 
-      # DEBUG —— 看看 CI 拿到的锁文件是啥
-      - name: Debug | show lockfile header
-        run: head -n 15 pnpm-lock.yaml || true
-
-      - name: Install deps
+      # 4) 安装依赖
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Docs
-        env: { NODE_OPTIONS: --max_old_space_size=8192 }
-        run: pnpm docs:build && touch src/.vuepress/dist/.nojekyll
+      # 5) 构建文档
+      - name: Build docs
+        run: |
+          pnpm docs:build
+          touch src/.vuepress/dist/.nojekyll   # 禁用 GitHub Pages Jekyll
 
-      - uses: JamesIves/github-pages-deploy-action@v4
+      # 6) 部署到 blog_pages 分支
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
-          branch: blog_pages
-          folder: src/.vuepress/dist
+          token:  ${{ secrets.ACCESS_TOKEN }}   # Personal Access Token，需有 repo 权限
+          branch: blog_pages                    # 发布到哪个分支
+          folder: src/.vuepress/dist            # 构建产物目录
