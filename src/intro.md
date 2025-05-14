@@ -9,10 +9,12 @@ category:
 ---
 
 <blockquote style="font-style: italic; font-size: 1.2rem; margin-top: 10px; color: #555;">
-    "Let me not then die ingloriously and without a struggle, but let me first do some great thing that shall be told among men hereafter."
+    "In preparing for battle I have always found that plans are useless, but planning is indispensable."
     <br>
-    <span style="font-size: 0.9rem; color: #777;">— Homer, <em>The Iliad</em>, Book 22</span>
+    <span style="font-size: 0.9rem; color: #777;">— Dwight D. Eisenhower</span>
 </blockquote>
+
+
 
 ### Spatial Transcriptome
 
