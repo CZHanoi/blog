@@ -1,11 +1,21 @@
 ---
-title: Trajectory & OT · 索引
-icon: chart-line
+title: 序言：此方
+icon: dna
 article: false
+category:
+  - Oracle
+tag:
+  - scRNAseq
+  - trajectory
 ---
 
-本分区聚焦 **Trajectory Inference**、**Optimal Transport (OT)**、  
-以及与细胞命运动力学相关的理论与实践。
+## 引言
 
-- [Sinkhorn 距离综述与实践](./demo-note.md)
-- （更多文章持续添加……）
+
+
+## 我在做什么
+
+
+
+## 文献整理合集
+

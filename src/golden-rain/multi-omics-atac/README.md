@@ -1,11 +1,27 @@
 ---
-title: Multi-Omics & ATAC · 索引
+title: 序言：整合运动
 icon: dna
 article: false
+category:
+  - Oracle
+tag:
+  - scRNAseq
+  - simulation
+  - multi-omics
+  - atac
 ---
 
-本分区收录 **多组学整合**、**ATAC-seq / 表观组**、  
-**单细胞调控网络** 等相关文献阅读与代码实战。
+## 引言
+
+
+
+## 我在做什么
+
+
+
+## 文献整理合集
+
+
 
 - [scMultiSim (2023)](./scmultisim.md)
 - （更多文章持续添加……）

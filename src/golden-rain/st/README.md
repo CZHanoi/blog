@@ -1,13 +1,21 @@
 ---
-title: ST · 索引
-icon: map-location-dot
+title: 序言：古筝计划
+icon: dna
 article: false
+category:
+  - Oracle
+tag:
+  - scRNAseq
+  - ST
 ---
 
-本分区专注 **Spatial Transcriptomics** 技术栈，包括：
+## 引言
 
-- 切片配准与空间映射；
-- ST + scRNA / scATAC 多模态整合；
-- 空间统计学与可视化。
 
-> *敬请期待……*
+
+## 我在做什么
+
+
+
+## 文献整理合集
+

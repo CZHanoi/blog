@@ -1,9 +1,11 @@
 ---
-title: Others · 索引
-icon: folder-open
+title: 序言：踵
+icon: dna
 article: false
+category:
+  - Oracle
+tag:
+  - scRNAseq
+  - ST
 ---
 
-放置暂不属于前述三大主题的随笔、工具记录与碎片化想法。
-
-- 待补充
