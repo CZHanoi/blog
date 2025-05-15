@@ -1,1 +1,72 @@
-// place your custom styles here
+
+.blog-page-wrapper {
+  position: relative;          
+}
+
+.blog-page-wrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;                  
+  pointer-events: none;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
+  will-change: background-position;   
+}
+
+html:not(.dark) .blog-page-wrapper::before {
+  background-image: url("/blog/bg-light6.jpg");
+//   background-size: 110%;
+  animation: bg-pan 45s linear infinite alternate;
+  background-position: center 0%; 
+  top: -10%;
+  left: -10%;
+  width: 110%;
+  height: 110%;
+}
+
+#app {
+    html[data-theme="dark"] & {
+        .blog-page-wrapper::before {
+        background-image: url("/blog/bg-dark.jpg");
+        background-size: cover;      //!!!
+        animation: none;
+        background-position: 0% 0%;
+//         top: -10%;
+//   left: -10%;
+//   width: 110%;
+//   height: 110%;
+        }
+    }
+}
+
+@keyframes bg-pan {
+
+  0%   { transform: translateX(9%); }       
+  50%  { transform: translateX(5%); }    
+  100% { transform: translateX(9%); }
+}
+
+.vp-blog-mask {
+  z-index: 1 !important;      
+}
+
+.blog-page-wrapper > * {
+  position: relative;
+  z-index: 0;                  
+}
+
+.epic-quote {
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-left: 4px solid currentColor;   // 默认用文字色作占位
+  border-radius: 6px;
+  transition: background-color .35s ease, color .35s ease,
+              border-color .35s ease;
+}

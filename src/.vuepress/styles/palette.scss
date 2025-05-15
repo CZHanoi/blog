@@ -1,1 +1,56 @@
 // you can change colors here
+/* 背景容器 -----------------------------------------------------------------*/
+// .blog-page-wrapper {
+//   position: relative;
+//   overflow: hidden;                 // 防止动画时漏白边
+// }
+
+// /* 公共伪元素 —— 背景层 -----------------------------------------------------*/
+// .blog-page-wrapper::before {
+//   content: "";
+//   position: fixed;
+//   /* 让背景比视口大 20%，并向外偏移 10% 以便左右最多平移 50% 而不漏白 */
+//   top: -10%;
+//   left: -10%;
+//   width: 120%;
+//   height: 120%;
+
+//   z-index: 0;
+//   pointer-events: none;
+
+//   background-repeat: no-repeat;
+//   background-position: center 5%;   // 保持原来的垂直 5% 偏移
+//   background-size: cover;
+//   will-change: transform;           // GPU 合成
+//   animation: bg-pan 45s linear infinite alternate;
+// }
+
+// /* 亮色主题图 --------------------------------------------------------------*/
+// html:not(.dark) .blog-page-wrapper::before {
+//   background-image: url("/blog/bg-light5.jpg");
+// }
+
+// /* 暗色主题图（静止） ------------------------------------------------------*/
+// html[data-theme="dark"] .blog-page-wrapper::before {
+//   background-image: url("/blog/bg-dark.jpg");
+//   animation: none;                  // 暗色不用平移
+//   transform: translateX(0);         // 保证位置一致
+// }
+
+// /* 横向往返平移关键帧 -------------------------------------------------------*/
+// @keyframes bg-pan {
+//   /* 0 % 与 100 % 位置相同，形成往返 */
+//   0%   { transform: translateX(2.5%); }       // 等效原先 background-position: 0% 5%
+//   50%  { transform: translateX(-2.5%); }    // 等效原先 background-position: 50% 5%
+//   100% { transform: translateX(2.5%); }
+// }
+
+// /* 其他层级与正文 -----------------------------------------------------------*/
+// .vp-blog-mask {
+//   z-index: 1 !important;
+// }
+
+// .blog-page-wrapper > * {
+//   position: relative;
+//   z-index: 1;                      // 放到背景之上（原来是 0）
+// }

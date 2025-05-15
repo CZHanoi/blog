@@ -7,6 +7,7 @@ heroImage: logo.png
 heroImageDark: logoDark.png
 bgImageDark: https://i.miji.bid/2025/01/26/02a305598afb106687751b86f4c3c880.jpeg
 bgImage: https://i.miji.bid/2025/01/26/81a71e3db55e6948132c62ef60bb95f1.jpeg
+pageClass: home-bg
 heroText: CZHanoi
 tagline: What can I say?
 heroFullScreen: true
@@ -25,8 +26,8 @@ projects:
 footer: Pending
 ---
 
-<blockquote style="font-style: italic; font-size: 1.4rem; margin-top: 10px; color: #555;">
-    "Let me not then die ingloriously and without a struggle, but let me first do some great thing that shall be told among men hereafter."
-    <br>
-    <span style="font-size: 0.9rem; color: #777;">— Homer, <em>The Iliad</em>, Book 22</span>
+<blockquote class="epic-quote">
+  “Let me not then die ingloriously and without a struggle, but let me first do some great thing that shall be told among men hereafter.”
+  <br>
+  <span class="epic-quote__cite">— Homer, <em>The Iliad</em>, Book 22</span>
 </blockquote>
