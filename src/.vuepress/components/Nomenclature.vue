@@ -60,65 +60,67 @@ watch(() => parts.value.Y, (newY, oldY) => {
 </script>
 
 <template>
-  <header class="top">
-    <div class="counter">
-      {{ parts.X.toString().padStart(2, "0") }}.
-      {{ parts.Y.toString().padStart(3, "0") }}.
-      {{ parts.Z }}
-    </div>
-    <div class="dt">
-      <span>{{ now.toLocaleDateString() }}</span>
-      <span>{{ now.toLocaleTimeString() }}・星期{{ weekday[now.getDay()] }}</span>
-    </div>
-  </header>
+  <div class="nomenclature-page-wrapper">
+    <header class="top">
+      <div class="counter">
+        {{ parts.X.toString().padStart(2, "0") }}.
+        {{ parts.Y.toString().padStart(3, "0") }}.
+        {{ parts.Z }}
+      </div>
+      <div class="dt">
+        <span>{{ now.toLocaleDateString() }}</span>
+        <span>{{ now.toLocaleTimeString() }}・星期{{ weekday[now.getDay()] }}</span>
+      </div>
+    </header>
 
-  <section class="ty" :class="{ ret: ty.retired }">
-    <h1>{{ ty.cn }}</h1><p>{{ ty.en }}</p>
-  </section>
+    <section class="ty" :class="{ ret: ty.retired }">
+      <h1>{{ ty.cn }}</h1><p>{{ ty.en }}</p>
+    </section>
 
-  <section class="boards" :style="{ gridTemplateColumns: grid }">
-    <aside class="card prev"   @dblclick="tog('L')">
-      <h3 :class="{ ret: tyPrev.retired }">{{ tyPrev.cn }}</h3>
-      <ul>
-        <li v-for="(t,i) in tasks.prev" :key="i">
-          <span :class="{ done:t.done }">{{ t.txt }}</span>
-          <div class="btns">
-            <button @click="toggle('prev',i)">✅</button>
-            <button @click="remove('prev',i)">🗑</button>
-          </div>
-        </li>
-      </ul>
-    </aside>
+    <section class="boards" :style="{ gridTemplateColumns: grid }">
+      <aside class="card prev"   @dblclick="tog('L')">
+        <h3 :class="{ ret: tyPrev.retired }">{{ tyPrev.cn }}</h3>
+        <ul>
+          <li v-for="(t,i) in tasks.prev" :key="i">
+            <span :class="{ done:t.done }">{{ t.txt }}</span>
+            <div class="btns">
+              <button @click="toggle('prev',i)">✅</button>
+              <button @click="remove('prev',i)">🗑</button>
+            </div>
+          </li>
+        </ul>
+      </aside>
 
-    <main class="card curr">
-      <h3>本周任务</h3>
-      <form class="adder" @submit.prevent="add">
-        <input v-model="input" placeholder="新任务…" /><button type="submit">＋</button>
-      </form>
-      <ul>
-        <li v-for="(t,i) in tasks.curr" :key="i">
-          <span :class="{ done:t.done }">{{ t.txt }}</span>
-          <div class="btns">
-            <button @click="toggle('curr',i)">✅</button>
-            <button @click="remove('curr',i)">🗑</button>
-          </div>
-        </li>
-      </ul>
-    </main>
+      <main class="card curr">
+        <h3>本周任务</h3>
+        <form class="adder" @submit.prevent="add">
+          <input v-model="input" placeholder="新任务…" /><button type="submit">＋</button>
+        </form>
+        <ul>
+          <li v-for="(t,i) in tasks.curr" :key="i">
+            <span :class="{ done:t.done }">{{ t.txt }}</span>
+            <div class="btns">
+              <button @click="toggle('curr',i)">✅</button>
+              <button @click="remove('curr',i)">🗑</button>
+            </div>
+          </li>
+        </ul>
+      </main>
 
-    <aside class="card next"   @dblclick="tog('R')">
-      <h3 :class="{ ret: tyNext.retired }">{{ tyNext.cn }}</h3>
-      <ul>
-        <li v-for="(t,i) in tasks.next" :key="i">
-          <span :class="{ done:t.done }">{{ t.txt }}</span>
-          <div class="btns">
-            <button @click="toggle('next',i)">✅</button>
-            <button @click="remove('next',i)">🗑</button>
-          </div>
-        </li>
-      </ul>
-    </aside>
-  </section>
+      <aside class="card next"   @dblclick="tog('R')">
+        <h3 :class="{ ret: tyNext.retired }">{{ tyNext.cn }}</h3>
+        <ul>
+          <li v-for="(t,i) in tasks.next" :key="i">
+            <span :class="{ done:t.done }">{{ t.txt }}</span>
+            <div class="btns">
+              <button @click="toggle('next',i)">✅</button>
+              <button @click="remove('next',i)">🗑</button>
+            </div>
+          </li>
+        </ul>
+      </aside>
+    </section>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -147,7 +149,7 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
 /* ─── Dark Mode ─── */
 #app {
   html[data-theme="dark"] & {
-    .blog-page-wrapper::before {
+    .nomenclature-page-wrapper::before {
       background-image: url("/blog/bg-dark.jpg");
       background-size: cover;      // !!!
       animation: none;
@@ -192,4 +194,71 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
   }
 }
 
+.nomenclature-page-wrapper::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;                  
+  pointer-events: none;
+
+  background-repeat: no-repeat;
+  background-position: center;
+  background-attachment: fixed;
+  background-size: cover;
+  will-change: background-position;   
+}
+
+html:not(.dark) .nomenclature-page-wrapper::before {
+  background-image: url("/blog/bg-light6.jpg");
+//   background-size: 110%;
+  animation: bg-pan 45s linear infinite alternate;
+  background-position: center 0%; 
+  top: -10%;
+  left: -10%;
+  width: 110%;
+  height: 110%;
+}
+
+#app {
+    html[data-theme="dark"] & {
+        .nomenclature-page-wrapper::before {
+        background-image: url("/blog/bg-dark.jpg");
+        background-size: cover;      //!!!
+        animation: none;
+        background-position: 0% 0%;
+//         top: -10%;
+//   left: -10%;
+//   width: 110%;
+//   height: 110%;
+        }
+    }
+}
+
+@keyframes bg-pan {
+
+  0%   { transform: translateX(9%); }       
+  50%  { transform: translateX(5%); }    
+  100% { transform: translateX(9%); }
+}
+
+.vp-blog-mask {
+  z-index: 1 !important;      
+}
+
+.nomenclature-page-wrapper > * {
+  position: relative;
+  z-index: 0;                  
+}
+
+.epic-quote {
+  font-style: italic;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  margin: 1.5rem 0;
+  padding: 1.25rem 1.5rem;
+  border-left: 4px solid currentColor;   // 默认用文字色作占位
+  border-radius: 6px;
+  transition: background-color .35s ease, color .35s ease,
+              border-color .35s ease;
+}
 </style>
