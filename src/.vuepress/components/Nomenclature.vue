@@ -121,7 +121,7 @@ watch(() => parts.value.Y, (newY, oldY) => {
   </section>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap");
 .top{display:grid;grid-template-columns:3fr 1.3fr;gap:1rem;align-items:center;margin-top:1.4rem}
 .counter{font:700 5rem "Cinzel Decorative",serif;color:#7646ff}
@@ -145,14 +145,51 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
 .btns button{background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0 .2rem}
 
 /* ─── Dark Mode ─── */
-@media (prefers-color-scheme: dark){
-  .counter{color:#d1c8ff}
-  .card{box-shadow:0 4px 14px rgba(0,0,0,.4);color:#f7f7f7}
-  .prev{background:#5b2241}
-  .curr{background:#1c355a}
-  .next{background:#423b1a}
-  .adder input{background:#2a2a2a;border-color:#666;color:#f7f7f7}
-  .adder button{background:#a78bfa}
-  .dt span:nth-child(2){opacity:.95}
+#app {
+  html[data-theme="dark"] & {
+    .blog-page-wrapper::before {
+      background-image: url("/blog/bg-dark.jpg");
+      background-size: cover;      // !!!
+      animation: none;
+      background-position: 0% 0%;
+      // 如果还需要 top/left/width/height 的微调
+      // top: -10%;
+      // left: -10%;
+      // width: 110%;
+      // height: 110%;
+    }
+
+    // 以下就是原 @media dark 下的各条规则
+    .counter {
+      color: #d1c8ff;
+    }
+    .card {
+      box-shadow: 0 4px 14px rgba(0,0,0,.4);
+      color: #f7f7f7;
+    }
+    .prev {
+      background: #5b2241;
+    }
+    .curr {
+      background: #1c355a;
+    }
+    .next {
+      background: #423b1a;
+    }
+    .adder {
+      input {
+        background: #2a2a2a;
+        border-color: #666;
+        color: #f7f7f7;
+      }
+      button {
+        background: #a78bfa;
+      }
+    }
+    .dt span:nth-child(2) {
+      opacity: .95;
+    }
+  }
 }
+
 </style>
