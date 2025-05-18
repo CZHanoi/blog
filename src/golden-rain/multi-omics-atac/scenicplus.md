@@ -1,12 +1,12 @@
 ---
 title: SCENIC+ 的网络研讨会笔记
-date: 2025-05-12
+date: 2025-05-18
 cover: scenic.jpg
 category:
   - Multi-Omics & ATAC
 tag:
   - scRNAseq
-  - simulation
+  - GRNs
   - multi-omics
   - nature-methods
 star: true
@@ -23,7 +23,7 @@ article: true
 
 ## 安装 Install
 
-这部分真的不想多说，因为众所周知的原因，；以及因为“pybigwig==0.3.23”的原因，Windows系统我试了很多次都没有成功。
+这部分真的不想多说，因为众所周知的原因，安装得需要借助强大的“外”力；以及因为“pybigwig==0.3.23”的原因，Windows系统我试了很多次都没有成功。
 
 ```
 git clone https://github.com/aertslab/scenicplus
@@ -61,7 +61,7 @@ note: This error originates from a subprocess, and is likely not a problem with 
 
 有一个十分费力的安装方法，后面得单独开一个页面来讲述了:astonished:
 
-验证安装成功:
+### 验证安装成功:
 
 终端中直接运行
 
@@ -112,7 +112,7 @@ usage: pycistopic [-h] {qc,topic_modeling,tss} ...
 pycistopic: error: the following arguments are required: command
 ```
 
-Notes：不要问为什么pycistopic的输出是个error,因为De Winter讲的时候就是这样样子（）
+**Notes：**不要问为什么pycistopic的输出是个error,因为De Winter讲的时候就是这样样子（）
 
 <div style="text-align: center;" id="fig0">
     <img src="./images/scenic/install.jpg" style="width:80%">
@@ -121,6 +121,7 @@ Notes：不要问为什么pycistopic的输出是个error,因为De Winter讲的�
         <br><br>
     </div>
 </div>
+
 
 ## 工作流 Workflow Overlook
 
@@ -132,9 +133,10 @@ Notes：不要问为什么pycistopic的输出是个error,因为De Winter讲的�
     </div>
 </div>
 
+
 主要目的从ATAC数据+Expression数据（multiomics data）推断**enhancer driven** GRNs。
 
-主要流程分成了三个独立的仓库
+主要流程分成了下面三个独立的仓库
 
 ①`aertslab/pycisTopic`
 
@@ -148,9 +150,15 @@ Notes：不要问为什么pycistopic的输出是个error,因为De Winter讲的�
 
 结合Expression数据获得GRNs。
 
-Notes：只推荐用于模式生物和人
+**Notes：**
+
+该方法只推荐用于模式生物和人，一方面是作者只提供了大鼠、小鼠、人和鸡的blacklist，另一方面可能就是不同生物的GRNs之间真的有很大差异；
+
+
 
 ## pycisTopic
+
+
 
 <div style="text-align: center;" id="fig2a">
     <img src="./images/scenic/pycisTopic1.png" style="width:80%">
@@ -159,6 +167,7 @@ Notes：只推荐用于模式生物和人
         <br><br>
     </div>
 </div>
+
 
 输入文件解释：
 
@@ -188,6 +197,7 @@ Notes：插值的原因是scATAC-seq矩阵高度稀疏（对比scRNA-seq来说�
         <br><br>
     </div>
 </div>
+
 
 ### ①推断共识峰（获取新的特征）Infer Consensus Peak
 
@@ -237,10 +247,11 @@ consensus_peaks.to_bed(
 <div style="text-align: center;" id="fig2b">
     <img src="./images/scenic/igv_pycistopic.jpg" style="width:80%">
     <div>
-        <span style="color:gray">Figure 3a: IGV views of Peaks</span>
+        <span style="color:gray">Figure 2c: IGV views of Peaks</span>
         <br><br>
     </div>
 </div>
+
 
 
 **Notes:**
@@ -249,19 +260,23 @@ consensus_peaks.to_bed(
 
 黑色的框则是最后计算得到的共识峰（Consensus peak）。后面的步骤则是**以这些Consensus peak作为features，每个Cell Barcodes作为index重新生成matrix**。
 
-### ②QC
+### ②QC + 生成新的计数矩阵
 
 filter high quality Cell barcodes（个人觉得，如果之前做过了这步可以省略，而且De Winter讲到这里的时候翻车了hhhh）→generate account matrix
 
-<1>简单介绍一下De Winter分享的如何看QC图（本人反正一直都是懵懵懂懂的）
+<1>QC
+
+原理和其他工具都一样，简单介绍一下De Winter分享的如何看QC图（本人反正一直都是懵懵懂懂的）
 
 <div style="text-align: center;" id="fig2b">
     <img src="./images/scenic/qc.webp" style="width:100%">
     <div>
-        <span style="color:gray">Figure 3b: QC</span>
+        <span style="color:gray">Figure 2d: QC</span>
         <br><br>
     </div>
 </div>
+
+
 
 图Left:(Number of Fragment——Barcode Rank): 希望观察到的是一个sharp knee
 
@@ -269,7 +284,7 @@ filter high quality Cell barcodes（个人觉得，如果之前做过了这步�
 
 图Right(TSS的Normalized Eenrichiment): 很漂亮的TSS enrichment
 
-<2>生成cistopic_obj（）
+<2>生成cistopic_obj
 
 ```python
 pycistopic_qc_output_dir = "outs/qc"
@@ -329,7 +344,17 @@ for sample_id in fragments_dict:
 
 
 
- 
+##  pycisTarget
+
+<div style="text-align: center;" id="fig2b">
+    <img src="./images/scenic/pycisTarget1.jpg" style="width:80%">
+    <div>
+        <span style="color:gray">Figure 3a: pycisTarget purpose</span>
+        <br><br>
+    </div>
+</div>
+
+
 
 
 

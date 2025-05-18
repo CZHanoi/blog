@@ -7,6 +7,7 @@ tag:
   - scRNAseq
   - simulation
   - multi-omics
+  - GRNs
   - nature-methods
 star: true
 article: false
