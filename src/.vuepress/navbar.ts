@@ -27,8 +27,8 @@ export default navbar([
 
   // ────────── 翰史 ──────────
   {
-    text: "翰史",
-    icon: "pen-to-square",
+    text: "碑",
+    icon: "monument",
     prefix: "/history/",
     children: [],
   },

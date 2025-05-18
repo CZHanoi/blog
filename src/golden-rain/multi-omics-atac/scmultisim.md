@@ -83,3 +83,12 @@ CCI: cell–cell interaction
 
 ### 原理
 
+Single cell multi-modal, multi-batch, multi-condition data integration and analysis. (Example projects: scDART, scMoMaT,scDisInFact)
+
+Temporal analysis of single cells: how cells change over pseudotime or real time through cell divisions. (Example projects: CellPath, LinRace)
+
+Spatial-omics and Spatial-temporal dynamics of cells (Example projects: scHybridNMF, CLARIFY, TemSOMap, SpaDecoder)
+
+Simulation of single cell omics (including temporal and spatial) data to evaluation computational methods. (Example projects: TedSim, scMultiSim)
+
+Inference of gene regulatory networks, cell-cell interactions, and cross-modality relationships in multi-omics data. (Example projects: CespGRN, CLARIFY)
