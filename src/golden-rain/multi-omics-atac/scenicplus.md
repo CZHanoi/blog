@@ -152,7 +152,7 @@ pycistopic: error: the following arguments are required: command
 
 **Notes：**
 
-该方法只推荐用于模式生物和人，一方面是作者只提供了大鼠、小鼠、人和鸡的blacklist，另一方面可能就是不同生物的GRNs之间真的有很大差异；
+该方法只推荐用于模式生物和人，一方面是作者只提供了大鼠、小鼠、人和果蝇的blacklist，另一方面可能就是不同生物的GRNs之间真的有很大差异；
 
 
 
@@ -346,6 +346,8 @@ for sample_id in fragments_dict:
 
 ##  pycisTarget
 
+
+
 <div style="text-align: center;" id="fig2b">
     <img src="./images/scenic/pycisTarget1.jpg" style="width:80%">
     <div>
@@ -354,7 +356,90 @@ for sample_id in fragments_dict:
     </div>
 </div>
 
+作用：在co-accessible region中找到enrich motifs
 
+
+
+输入文件解释：
+
+<1>Set of co-accessible region，可以是Topics或者DARs
+
+→**※CisTarget Database** 
+
+<2>Motif Collection，见网址[Index of /cistarget/motif_collections/v10nr_clust_public](https://resources.aertslab.org/cistarget/motif_collections/v10nr_clust_public/)
+
+输出文件：
+
+注释成TF的富集的motifs集合
+
+
+
+<div style="text-align: center;" id="fig3b">
+    <img src="./images/scenic/pycisTarget2.jpg" style="width:80%">
+    <div>
+        <span style="color:gray">Figure 3b: create_cisTarget_databases WorkFlow</span>
+        <br><br>
+    </div>
+</div>
+
+
+
+Notes: 尽管他们预先计算好了人鼠果蝇的motifs-to-TF Annotations (Target Database),但这些只是在General regions，所以推荐自己根据Consensus Peaks自己创建Database。
+
+
+
+### ①Create Cistarget Database
+
+<1>访问仓库[`aertslab/create_cisTarget_databases`](https://github.com/aertslab/create_cisTarget_databases)
+
+给DNA序列进行motifs打分
+
+<2>下载工具[`Cluster-Buster`](https://resources.aertslab.org/cistarget/programs/cbust)
+
+使用隐马尔可夫链方法生成分数
+
+```
+wget https://resources.aertslab.org/cistarget/programs/cbust
+chmod a+x cbust
+```
+
+<3>下载[Motif Collection](https://resources.aertslab.org/cistarget/motif_collections/v10nr_clust_public/)
+
+**<4>**将Consensus Peaks 转为 fasta文件（使用bedtools)
+
+选作: add 1kb of background padding，作为cluster-buster的Background sequence。
+
+<5>运行
+
+
+
+<div style="text-align: center;" id="fig3c">
+    <img src="./images/scenic/pycisTarget3.jpg" style="width:80%">
+    <div>
+        <span style="color:gray">Figure 3c: pycisTarget WorkFlow</span>
+        <br><br>
+    </div>
+</div>
+
+
+
+##  SCENICPlus
+
+讲者: Darina Abaffyová, 同组的PhD
+
+
+
+<div style="text-align: center;" id="fig4a">
+    <img src="./images/scenic/scenic1.jpg" style="width:80%">
+    <div>
+        <span style="color:gray">Figure 4a: scenic+ WorkFlow</span>
+        <br><br>
+    </div>
+</div>
+
+
+
+ 
 
 
 
