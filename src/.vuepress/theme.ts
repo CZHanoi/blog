@@ -95,4 +95,7 @@ export default hopeTheme({
       prefix: "fa6-solid:",
     },
   },
+},
+{
+  custom: true,
 });

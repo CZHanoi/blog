@@ -35,7 +35,7 @@ const weekIdx = ref(parts.value.Y);
 const tasks: WeekTasks = reactive(loadWeek(weekIdx.value));
 
 /* ───── ★ ③-1 上周任务（只读） ───── */
-const lastWeekIdx  = computed(() => (weekIdx.value + 139) % 140);      // 0-139 环状
+const lastWeekIdx  = computed(() => (weekIdx.value + 139) % 140);
 const lastWeekTasks: WeekTasks = reactive(loadWeek(lastWeekIdx.value));
 
 /* ───── ④ 输入 & 操作 ───── */
@@ -63,7 +63,7 @@ watch(() => parts.value.Y, (newY, oldY) => {
   weekIdx.value = newY;
   tasks.prev = loaded.prev; tasks.curr = loaded.curr; tasks.next = loaded.next;
 
-  /* ★ 同步刷新上周只读数据 */
+  /* ★ 同步刷新上周数据 */
   const lastLoaded = loadWeek((newY + 139) % 140);
   lastWeekTasks.prev = lastLoaded.prev;
   lastWeekTasks.curr = lastLoaded.curr;
@@ -90,18 +90,19 @@ watch(() => parts.value.Y, (newY, oldY) => {
     </section>
 
     <section class="boards" :style="{ gridTemplateColumns: grid }">
-      <!-- ★ 左侧卡片：改为显示 lastWeekTasks.curr，只读、无按钮 -->
+      <!-- ★ 左侧卡片：上周任务（只读 / 彩色区分状态） -->
       <aside class="card prev" @dblclick="tog('L')">
         <h3 :class="{ ret: tyPrev.retired }">{{ tyPrev.cn }}</h3>
         <ul>
           <li v-if="lastWeekTasks.curr.length === 0" class="empty">— 上周无任务 —</li>
           <li v-for="(t,i) in lastWeekTasks.curr" :key="i">
-            <span :class="{ done:t.done }">{{ t.txt }}</span>
+            <!-- ★ 根据 t.done 着色 -->
+            <span :class="{ done: t.done }">{{ t.txt }}</span>
           </li>
         </ul>
       </aside>
 
-      <!-- 中间：本周任务（可编辑） -->
+      <!-- 中间：本周任务 -->
       <main class="card curr">
         <h3>本周任务</h3>
         <form class="adder" @submit.prevent="add">
@@ -118,7 +119,7 @@ watch(() => parts.value.Y, (newY, oldY) => {
         </ul>
       </main>
 
-      <!-- 右侧：下周计划（可编辑） -->
+      <!-- 右侧：下周计划 -->
       <aside class="card next" @dblclick="tog('R')">
         <h3 :class="{ ret: tyNext.retired }">{{ tyNext.cn }}</h3>
         <ul>
@@ -150,15 +151,18 @@ watch(() => parts.value.Y, (newY, oldY) => {
 .prev{background:#ffe8f3}.curr{background:#e6f1ff;cursor:default}.next{background:#fff6d8}
 .card h3{margin:0 0 .55rem;font-size:1.1rem;text-align:center}.card h3.ret{color:#e53935}
 
-/* ★ 只读左卡空态 */
+/* ★ 左侧卡片文本颜色规则 */
 .prev ul .empty{justify-content:center;opacity:.6}
+.prev li span{color:#000;font-weight:700;}          /* 未完成：黑色加粗 */
+.prev li span.done{color:#FFD700;text-decoration:none;opacity:1;}   /* 完成：金黄 */
 
+/* 共用样式 */
 .adder{display:flex;gap:.45rem;margin-bottom:.6rem;width:80%}.adder input{flex:1;padding:.45rem .6rem;border:1px solid #bbb;border-radius:10px}.adder button{width:2.6rem;border:none;border-radius:10px;background:#7646ff;color:#fff;font-size:1.3rem}
 .curr{display:flex;flex-direction:column;align-items:center}.curr ul{width:80%}
 
 ul{list-style:none;padding:0;margin:0;max-height:240px;overflow:auto}
 li{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;border-bottom:1px dashed #ccc}
-li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
+li:last-child{border:none}.done{text-decoration:line-through;opacity:.6} /* 供中/右卡使用 */
 .btns button{background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0 .2rem}
 
 /* ─── Dark Mode ─── */
@@ -176,6 +180,10 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
     .prev { background:#5b2241; }
     .curr { background:#1c355a; }
     .next { background:#423b1a; }
+    /* ★ Dark 模式下的颜色保持一致 */
+    .prev li span{color:#f0f0f0;font-weight:700;}
+    .prev li span.done{color:#FFD700;}
+
     .adder {
       input { background:#2a2a2a;border-color:#666;color:#f7f7f7; }
       button{ background:#a78bfa; }
@@ -183,6 +191,9 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
     .dt span:nth-child(2){ opacity:.95; }
   }
 }
+
+/* ★ 隐藏 page-cover（全局作用，但只在本页组件挂载时加载） */
+:global(.page-cover){display:none !important;}
 
 .nomenclature-page-wrapper::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
