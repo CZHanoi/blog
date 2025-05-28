@@ -420,6 +420,127 @@ chmod a+x cbust
         <br><br>
     </div>
 </div>
+我的代码流程如下：
+
+①run_create_fasta.sh
+
+```bash
+#!/usr/bin/env bash
+
+eval "$(/public/home/chenzhh/bin/micromamba shell hook -s bash)"
+micromamba activate create_cistarget_databases
+
+GENOME_FA="/public/home/chenzhh/udanmas/Dianmu/outs/mm10.fa"
+CHRSZS="/public/home/chenzhh/udanmas/Dianmu/outs/mm10.chrom.sizes"
+REG_BED="/public/home/chenzhh/udanmas/Dianmu/outs/consensus_peak_calling/consensus_regions.bed"
+OUT_FA="/public/home/chenzhh/udanmas/Dianmu/outs/mouse_brain_with1kb_bg.fa"
+PADDING=1000
+
+SCRIPT_DIR="/public/home/chenzhh/packgae_python/create_cisTarget_databases"
+CREATE_SH="${SCRIPT_DIR}/create_fasta_with_padded_bg_from_bed.sh"
+
+command -v bedtools >/dev/null 2>&1 || { echo >&2 "Error: bedtools not found in PATH."; exit 1; }
+[ -x "${CREATE_SH}" ] || { echo >&2 "Error: script ${CREATE_SH} not found or not executable."; exit 1; }
+
+echo "[$(date)] Starting create_fasta_with_padded_bg_from_bed..."
+bash "${CREATE_SH}" \
+    "${GENOME_FA}" \
+    "${CHRSZS}" \
+    "${REG_BED}" \
+    "${OUT_FA}" \
+    "${PADDING}" \
+    yes
+
+RET=$?
+if [ $RET -eq 0 ]; then
+  echo "[$(date)] Done successfully: ${OUT_FA}"
+else
+  echo "[$(date)] ERROR (exit code $RET)"
+fi
+
+exit $RET
+
+
+```
+
+②
+
+```bash
+#!/usr/bin/env bash
+
+OUT_DIR="/public/home/chenzhh/udanmas/Dianmu"
+SCRIPT_DIR="/public/home/chenzhh/packgae_python/create_cisTarget_databases"
+DATABASE_PREFIX="mouse_brain"
+FASTA_FILE="${OUT_DIR}/outs/mouse_brain_with1kb_bg.fa"
+CBDIR="/public/home/chenzhh/udanmas/Mindulle/aertslab_motif_colleciton/v10nr_clust_public/singletons"
+MOTIF_LIST="${OUT_DIR}/motifs.txt"
+CORES=180
+
+MICROMAMBA_BIN="/public/home/chenzhh/bin/micromamba"
+
+cd "${OUT_DIR}" || { echo "Cannot cd to ${OUT_DIR}"; exit 1; }
+
+ls "${CBDIR}" > "${MOTIF_LIST}"
+
+if [ ! -x "${SCRIPT_DIR}/create_cistarget_motif_databases.py" ]; then
+  echo "Error: ${SCRIPT_DIR}/create_cistarget_motif_databases.py not found or not executable"
+  exit 1
+fi
+
+echo "[$(date)] START cisTarget DB build with ${CORES} cores"
+"${MICROMAMBA_BIN}" run -n create_cistarget_databases python \
+    "${SCRIPT_DIR}/create_cistarget_motif_databases.py" \
+      -f "${FASTA_FILE}" \
+      -M "${CBDIR}" \
+      -m "${MOTIF_LIST}" \
+      -o "${OUT_DIR}/${DATABASE_PREFIX}" \
+      --bgpadding 1000 \
+      -t ${CORES}
+
+RET=$?
+if [ $RET -eq 0 ]; then
+  echo "[$(date)] DONE cisTarget DB: ${OUT_DIR}/${DATABASE_PREFIX}"
+else
+  echo "[$(date)] ERROR (exit ${RET})"
+fi
+exit $RET
+
+
+```
+
+③运行
+
+```bash
+chmod +x /public/home/chenzhh/udanmas/Dianmu/run_create_fasta.sh
+nohup bash run_create_fasta.sh > create_fasta.log 2>&1 &
+tail -f create_fasta.log
+chmod +x /public/home/chenzhh/udanmas/Dianmu/run_create_cistarget_db.sh
+nohup bash run_create_cistarget_db.sh > create_cistarget_db.log 2>&1 &
+tail -f create_cistarget_db.log
+```
+
+Notes:
+
+准备环境中需要注意很多很多问题（多到我想紫砂），我觉得后面他们应该会优化，所以我只简单写一下我搞完后还记得的内容吧
+
+```bash
+#标准创建这个环境请查看github吧，实在没有重复的心情（算了还是记录一遍吧）
+git clone -b change_f4_output https://github.com/ghuls/cluster-buster/
+cd cluster-buster/
+make cbust
+#顺带一提，cbust_amd_libm_aocc的编译不是必须的，只是一个加速项，编译这个那可费老鼻子劲了）
+cp -a cbust "${CONDA_PREFIX}/bin/cbust"
+cd "${CONDA_PREFIX}/bin"
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/liftOver
+wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bigWigAverageOverBed
+chmod a+x liftOver bigWigAverageOverBed
+micromamba activate create_cistarget_databases
+
+mamba install -c bioconda bedtools
+#以及推荐环境安装时，panda版本2.2.2无论如何都会报错，事实上代码只使用pandas生成motifs的列表（，并不影响全局计算因素(显然的),所以请更换为2.2.3
+
+```
+
 
 
 
@@ -451,3 +572,10 @@ wget -O data/fragments.tsv.gz.tbi https://cf.10xgenomics.com/samples/cell-arc/1.
 wget -O data/cell_data.tsv https://raw.githubusercontent.com/aertslab/pycisTopic/polars/data/cell_data_human_cerebellum.tsv
 ```
 
+每日一个没用小技巧：
+
+```bash
+ps -eo user,%cpu --no-headers | awk '{cpu[$1]+=$2} END {for (u in cpu) print u, cpu[u]}' | sort -k2 -nr | head
+```
+
+查看是哪个人占了最多的核（八嘎

@@ -30,23 +30,29 @@ const ty     = computed(() => tyMap.value[  parts.value.Y             ] ?? { cn:
 const tyPrev = computed(() => tyMap.value[ (parts.value.Y + 139) % 140] ?? { cn: "未知", en: "Unknown", retired: false });
 const tyNext = computed(() => tyMap.value[ (parts.value.Y +   1) % 140] ?? { cn: "未知", en: "Unknown", retired: false });
 
-/* ───── ③ 任务 ───── */
+/* ───── ③ 本周任务 ───── */
 const weekIdx = ref(parts.value.Y);
 const tasks: WeekTasks = reactive(loadWeek(weekIdx.value));
 
+/* ───── ★ ③-1 上周任务（只读） ───── */
+const lastWeekIdx  = computed(() => (weekIdx.value + 139) % 140);      // 0-139 环状
+const lastWeekTasks: WeekTasks = reactive(loadWeek(lastWeekIdx.value));
+
+/* ───── ④ 输入 & 操作 ───── */
 const input = ref("");
 function add() { if (!input.value.trim()) return; tasks.curr.unshift({ txt: input.value.trim(), done: false }); input.value = ""; }
 function toggle(list: keyof WeekTasks, i: number) { tasks[list][i].done = !tasks[list][i].done; }
 function remove(list: keyof WeekTasks, i: number) { tasks[list].splice(i, 1); }
 
-/* ───── ④ 折叠列宽 ───── */
+/* ───── ⑤ 折叠列宽 ───── */
 const L = ref(false), R = ref(false);
 function tog(w: "L" | "R") { w === "L" ? (L.value = !L.value, R.value = false) : (R.value = !R.value, L.value = false); }
 const grid = computed(() => L.value ? "3fr 1fr 1fr" : R.value ? "1fr 1fr 3fr" : "1fr 3fr 1fr");
 
-/* ───── ⑤ 跨周迁移 ───── */
+/* ───── ⑥ 跨周迁移 ───── */
 watch(() => parts.value.Y, (newY, oldY) => {
   if (newY === oldY) return;
+
   const prevWeekData = JSON.parse(JSON.stringify(tasks));
   const loaded = loadWeek(newY);
   if (loaded.prev.length === 0 && loaded.curr.length === 0 && loaded.next.length === 0) {
@@ -56,6 +62,12 @@ watch(() => parts.value.Y, (newY, oldY) => {
   }
   weekIdx.value = newY;
   tasks.prev = loaded.prev; tasks.curr = loaded.curr; tasks.next = loaded.next;
+
+  /* ★ 同步刷新上周只读数据 */
+  const lastLoaded = loadWeek((newY + 139) % 140);
+  lastWeekTasks.prev = lastLoaded.prev;
+  lastWeekTasks.curr = lastLoaded.curr;
+  lastWeekTasks.next = lastLoaded.next;
 });
 </script>
 
@@ -78,19 +90,18 @@ watch(() => parts.value.Y, (newY, oldY) => {
     </section>
 
     <section class="boards" :style="{ gridTemplateColumns: grid }">
-      <aside class="card prev"   @dblclick="tog('L')">
+      <!-- ★ 左侧卡片：改为显示 lastWeekTasks.curr，只读、无按钮 -->
+      <aside class="card prev" @dblclick="tog('L')">
         <h3 :class="{ ret: tyPrev.retired }">{{ tyPrev.cn }}</h3>
         <ul>
-          <li v-for="(t,i) in tasks.prev" :key="i">
+          <li v-if="lastWeekTasks.curr.length === 0" class="empty">— 上周无任务 —</li>
+          <li v-for="(t,i) in lastWeekTasks.curr" :key="i">
             <span :class="{ done:t.done }">{{ t.txt }}</span>
-            <div class="btns">
-              <button @click="toggle('prev',i)">✅</button>
-              <button @click="remove('prev',i)">🗑</button>
-            </div>
           </li>
         </ul>
       </aside>
 
+      <!-- 中间：本周任务（可编辑） -->
       <main class="card curr">
         <h3>本周任务</h3>
         <form class="adder" @submit.prevent="add">
@@ -107,7 +118,8 @@ watch(() => parts.value.Y, (newY, oldY) => {
         </ul>
       </main>
 
-      <aside class="card next"   @dblclick="tog('R')">
+      <!-- 右侧：下周计划（可编辑） -->
+      <aside class="card next" @dblclick="tog('R')">
         <h3 :class="{ ret: tyNext.retired }">{{ tyNext.cn }}</h3>
         <ul>
           <li v-for="(t,i) in tasks.next" :key="i">
@@ -138,6 +150,9 @@ watch(() => parts.value.Y, (newY, oldY) => {
 .prev{background:#ffe8f3}.curr{background:#e6f1ff;cursor:default}.next{background:#fff6d8}
 .card h3{margin:0 0 .55rem;font-size:1.1rem;text-align:center}.card h3.ret{color:#e53935}
 
+/* ★ 只读左卡空态 */
+.prev ul .empty{justify-content:center;opacity:.6}
+
 .adder{display:flex;gap:.45rem;margin-bottom:.6rem;width:80%}.adder input{flex:1;padding:.45rem .6rem;border:1px solid #bbb;border-radius:10px}.adder button{width:2.6rem;border:none;border-radius:10px;background:#7646ff;color:#fff;font-size:1.3rem}
 .curr{display:flex;flex-direction:column;align-items:center}.curr ul{width:80%}
 
@@ -151,114 +166,56 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
   html[data-theme="dark"] & {
     .nomenclature-page-wrapper::before {
       background-image: url("/blog/bg-dark.jpg");
-      background-size: cover;      // !!!
+      background-size: cover;
       animation: none;
       background-position: 0% 0%;
-      // 如果还需要 top/left/width/height 的微调
-      // top: -10%;
-      // left: -10%;
-      // width: 110%;
-      // height: 110%;
     }
 
-    // 以下就是原 @media dark 下的各条规则
-    .counter {
-      color: #d1c8ff;
-    }
-    .card {
-      box-shadow: 0 4px 14px rgba(0,0,0,.4);
-      color: #f7f7f7;
-    }
-    .prev {
-      background: #5b2241;
-    }
-    .curr {
-      background: #1c355a;
-    }
-    .next {
-      background: #423b1a;
-    }
+    .counter { color: #d1c8ff; }
+    .card { box-shadow: 0 4px 14px rgba(0,0,0,.4); color: #f7f7f7; }
+    .prev { background:#5b2241; }
+    .curr { background:#1c355a; }
+    .next { background:#423b1a; }
     .adder {
-      input {
-        background: #2a2a2a;
-        border-color: #666;
-        color: #f7f7f7;
-      }
-      button {
-        background: #a78bfa;
-      }
+      input { background:#2a2a2a;border-color:#666;color:#f7f7f7; }
+      button{ background:#a78bfa; }
     }
-    .dt span:nth-child(2) {
-      opacity: .95;
-    }
+    .dt span:nth-child(2){ opacity:.95; }
   }
 }
 
-.nomenclature-page-wrapper::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;                  
-  pointer-events: none;
-
-  background-repeat: no-repeat;
-  background-position: center;
-  background-attachment: fixed;
-  background-size: cover;
-  will-change: background-position;   
+.nomenclature-page-wrapper::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-repeat:no-repeat;background-position:center;
+  background-attachment:fixed;background-size:cover;
+  will-change:background-position;
 }
-
-html:not(.dark) .nomenclature-page-wrapper::before {
-  background-image: url("/blog/bg-light6.jpg");
-//   background-size: 110%;
-  animation: bg-pan 45s linear infinite alternate;
-  background-position: center 0%; 
-  top: -10%;
-  left: -10%;
-  width: 110%;
-  height: 110%;
+html:not(.dark) .nomenclature-page-wrapper::before{
+  background-image:url("/blog/bg-light6.jpg");
+  animation:bg-pan 45s linear infinite alternate;
+  background-position:center 0%;
+  top:-10%;left:-10%;width:110%;height:110%;
 }
-
-#app {
-    html[data-theme="dark"] & {
-        .nomenclature-page-wrapper::before {
-        background-image: url("/blog/bg-dark.jpg");
-        background-size: cover;      //!!!
-        animation: none;
-        background-position: 0% 0%;
-//         top: -10%;
-//   left: -10%;
-//   width: 110%;
-//   height: 110%;
-        }
+#app{
+  html[data-theme="dark"] &{
+    .nomenclature-page-wrapper::before{
+      background-image:url("/blog/bg-dark.jpg");
+      background-size:cover;animation:none;background-position:0% 0%;
     }
+  }
 }
-
-@keyframes bg-pan {
-
-  0%   { transform: translateX(9%); }       
-  50%  { transform: translateX(5%); }    
-  100% { transform: translateX(9%); }
+@keyframes bg-pan{
+  0%{transform:translateX(9%)}
+  50%{transform:translateX(5%)}
+  100%{transform:translateX(9%)}
 }
+.vp-blog-mask{z-index:1 !important}
+.nomenclature-page-wrapper > *{position:relative;z-index:0}
 
-.vp-blog-mask {
-  z-index: 1 !important;      
-}
-
-.nomenclature-page-wrapper > * {
-  position: relative;
-  z-index: 0;                  
-}
-
-.epic-quote {
-  font-style: italic;
-  font-size: 1.4rem;
-  line-height: 1.5;
-  margin: 1.5rem 0;
-  padding: 1.25rem 1.5rem;
-  border-left: 4px solid currentColor;   // 默认用文字色作占位
-  border-radius: 6px;
-  transition: background-color .35s ease, color .35s ease,
-              border-color .35s ease;
+.epic-quote{
+  font-style:italic;font-size:1.4rem;line-height:1.5;
+  margin:1.5rem 0;padding:1.25rem 1.5rem;
+  border-left:4px solid currentColor;border-radius:6px;
+  transition:background-color .35s ease,color .35s ease,border-color .35s ease;
 }
 </style>
