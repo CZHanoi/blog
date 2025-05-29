@@ -96,7 +96,6 @@ watch(() => parts.value.Y, (newY, oldY) => {
         <ul>
           <li v-if="lastWeekTasks.curr.length === 0" class="empty">— 上周无任务 —</li>
           <li v-for="(t,i) in lastWeekTasks.curr" :key="i">
-            <!-- ★ 根据 t.done 着色 -->
             <span :class="{ done: t.done }">{{ t.txt }}</span>
           </li>
         </ul>
@@ -133,11 +132,31 @@ watch(() => parts.value.Y, (newY, oldY) => {
         </ul>
       </aside>
     </section>
+
+    <!-- ★ -->
+    <blockquote style="font-style: italic; font-size: 1.7rem; margin: 1.5rem 0 0; color: #555; text-align: center;">
+      <strong>
+        "I will not cease from Mental Fight,<br>
+        Nor shall my Sword sleep in my hand:<br>
+        Till we have built Jerusalem,<br>
+        In Our green & pleasant Land."
+      </strong>
+    <br>
+    <span style="font-size: 1rem; color: #777;">— William Blake, <em>Milton: A Poem</em> (1804), Preface</span>
+    </blockquote>
+
+
   </div>
 </template>
 
 <style scoped lang="scss">
 @import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&display=swap");
+
+/* ────────── 基础布局 ────────── */
+.nomenclature-page-wrapper {
+  position: relative;
+}
+
 .top{display:grid;grid-template-columns:3fr 1.3fr;gap:1rem;align-items:center;margin-top:1.4rem}
 .counter{font:700 5rem "Cinzel Decorative",serif;color:#7646ff}
 .dt{display:flex;flex-direction:column;text-align:right;font-weight:600}
@@ -153,8 +172,8 @@ watch(() => parts.value.Y, (newY, oldY) => {
 
 /* ★ 左侧卡片文本颜色规则 */
 .prev ul .empty{justify-content:center;opacity:.6}
-.prev li span{color:#000;font-weight:700;}          /* 未完成：黑色加粗 */
-.prev li span.done{color:#FFD700;text-decoration:none;opacity:1;}   /* 完成：金黄 */
+.prev li span{color:#000;font-weight:700;}
+.prev li span.done{color:#FFD700;text-decoration:none;opacity:1;}
 
 /* 共用样式 */
 .adder{display:flex;gap:.45rem;margin-bottom:.6rem;width:80%}.adder input{flex:1;padding:.45rem .6rem;border:1px solid #bbb;border-radius:10px}.adder button{width:2.6rem;border:none;border-radius:10px;background:#7646ff;color:#fff;font-size:1.3rem}
@@ -162,28 +181,67 @@ watch(() => parts.value.Y, (newY, oldY) => {
 
 ul{list-style:none;padding:0;margin:0;max-height:240px;overflow:auto}
 li{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;border-bottom:1px dashed #ccc}
-li:last-child{border:none}.done{text-decoration:line-through;opacity:.6} /* 供中/右卡使用 */
+li:last-child{border:none}.done{text-decoration:line-through;opacity:.6}
 .btns button{background:none;border:none;font-size:1.1rem;cursor:pointer;padding:0 .2rem}
+
+/* ─── 背景及 z-index 关系 ─── */
+.nomenclature-page-wrapper::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+
+  background-repeat:no-repeat;
+  background-position:center;
+  background-attachment:fixed;
+  background-size:cover;
+  will-change:background-position;
+}
+
+html:not(.dark) .nomenclature-page-wrapper::before{
+  background-image:url("/blog/bg-light6.jpg");
+  animation:bg-pan 45s linear infinite alternate;
+  background-position:center 0%;
+  top:-10%;left:-10%;width:110%;height:110%;
+}
+
+#app{
+  html[data-theme="dark"] &{
+    .nomenclature-page-wrapper::before{
+      background-image:url("/blog/bg-dark.jpg");
+      background-size:cover;
+      animation:none;
+      background-position:0% 0%;
+    }
+  }
+}
+
+@keyframes bg-pan{
+  0%{transform:translateX(9%)}
+  50%{transform:translateX(5%)}
+  100%{transform:translateX(9%)}
+}
+
+.vp-blog-mask{
+  z-index:1 !important;
+}
+
+.nomenclature-page-wrapper > *{
+  position:relative;
+  z-index:0;
+}
 
 /* ─── Dark Mode ─── */
 #app {
   html[data-theme="dark"] & {
-    .nomenclature-page-wrapper::before {
-      background-image: url("/blog/bg-dark.jpg");
-      background-size: cover;
-      animation: none;
-      background-position: 0% 0%;
-    }
-
     .counter { color: #d1c8ff; }
     .card { box-shadow: 0 4px 14px rgba(0,0,0,.4); color: #f7f7f7; }
     .prev { background:#5b2241; }
     .curr { background:#1c355a; }
     .next { background:#423b1a; }
-    /* ★ Dark 模式下的颜色保持一致 */
     .prev li span{color:#f0f0f0;font-weight:700;}
     .prev li span.done{color:#FFD700;}
-
     .adder {
       input { background:#2a2a2a;border-color:#666;color:#f7f7f7; }
       button{ background:#a78bfa; }
@@ -192,36 +250,8 @@ li:last-child{border:none}.done{text-decoration:line-through;opacity:.6} /* 供�
   }
 }
 
-/* ★ 隐藏 page-cover（全局作用，但只在本页组件挂载时加载） */
+/* ─── 其他 ─── */
 :global(.page-cover){display:none !important;}
-
-.nomenclature-page-wrapper::before{
-  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-repeat:no-repeat;background-position:center;
-  background-attachment:fixed;background-size:cover;
-  will-change:background-position;
-}
-html:not(.dark) .nomenclature-page-wrapper::before{
-  background-image:url("/blog/bg-light6.jpg");
-  animation:bg-pan 45s linear infinite alternate;
-  background-position:center 0%;
-  top:-10%;left:-10%;width:110%;height:110%;
-}
-#app{
-  html[data-theme="dark"] &{
-    .nomenclature-page-wrapper::before{
-      background-image:url("/blog/bg-dark.jpg");
-      background-size:cover;animation:none;background-position:0% 0%;
-    }
-  }
-}
-@keyframes bg-pan{
-  0%{transform:translateX(9%)}
-  50%{transform:translateX(5%)}
-  100%{transform:translateX(9%)}
-}
-.vp-blog-mask{z-index:1 !important}
-.nomenclature-page-wrapper > *{position:relative;z-index:0}
 
 .epic-quote{
   font-style:italic;font-size:1.4rem;line-height:1.5;

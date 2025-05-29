@@ -27,7 +27,7 @@ export default hopeTheme({
 
   footer: "Default footer",
   displayFooter: true,
-
+  pageInfo: ["Author", "Date", "Category", "Tag"],
   encrypt: {
     config: {
       "/demo/encrypt.html": {
@@ -38,7 +38,7 @@ export default hopeTheme({
   },
 
   blog: {
-    description: "和越南首都撞名的苦命孩子",
+    description: "Onward to Jerusalem",
     intro: "/intro.html",
     medias: {
       BiliBili: "https://space.bilibili.com/276236496",
