@@ -567,6 +567,24 @@ mamba install -c bioconda bedtools
 
 ### ①配置
 
+`Snakemake`的工作目录是下面这样的：
+
+```bash
+conda activate scenicplus
+cd       /public/home/chenzhh/udanmas/Lionrock/formal_scenic
+scenicplus init_snakemake --out_dir scplus_pipeline
+tree scplus_pipeline
+#scplus_pipeline/
+#└── Snakemake
+#    ├── config
+#    │   └── config.yaml
+#    └── workflow
+#        └── Snakefile
+mkdir -p outs
+mkdir -p tmp
+vim scplus_pipeline/Snakemake/config/config.yaml
+```
+
 对于这个文件的写入，有以下几个文件需要格外说明：
 
 ```yaml
@@ -689,23 +707,15 @@ conda activate scenicplus
 snakemake --cores 30 #可以和yaml文件中不一致，经过测试以这个为主
 ```
 
+### ②八阿哥
+
+遇到的bug包括但不限于数据不行、库不行；环境不行、人不行。下面我们逐步介绍我们对每个bug的解（妥）决（协）；
+
+（1）``
+
+这个bug体现为啥也没说还没开始就出师未捷身先死；
 
 
-```bash
-conda activate scenicplus
-cd       /public/home/chenzhh/udanmas/Lionrock/formal_scenic
-scenicplus init_snakemake --out_dir scplus_pipeline
-tree scplus_pipeline
-#scplus_pipeline/
-#└── Snakemake
-#    ├── config
-#    │   └── config.yaml
-#    └── workflow
-#        └── Snakefile
-mkdir -p outs
-mkdir -p tmp
-vim scplus_pipeline/Snakemake/config/config.yaml
-```
 
 ```
 nohup snakemake --cores 20 --rerun-incomplete       > snakemake_$(date +%Y%m%d_%H%M%S).log 2>&1 &
@@ -713,20 +723,18 @@ nohup bash run_create_fasta.sh > create_fasta_$(date +%Y%m%d_%H%M%S)_pandas223-2
 nohup bash run_create_cistarget_db.sh > create_db_$(date +%Y%m%d_%H%M%S)_pandas223-222.log 2>&1 &
 ```
 
-这个是空的
 
-```
-zy_22111220045@dsw-20921-546b84cf5f-l4pqg:/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type$ pwd
+
+```bash
+> pwd
 /cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type
-zy_22111220045@dsw-20921-546b84cf5f-l4pqg:/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type$ ls
-Astro-1.bed  Astro-5.bed  ExN-CA1.bed      ExN-DEGLU-2.bed  ExN-L5-6-NP.bed  ExN-L6-IT.bed  InN-Erbb4.bed  InN-Sncg.bed  Micro-1.bed  OPC-1.bed   Olig-3.bed  Peri.bed
-Astro-2.bed  Astro-6.bed  ExN-CA2.bed      ExN-DG.bed       ExN-L5-ET.bed    ExN-L6b.bed    InN-Lamp5.bed  InN-Sst.bed   Micro-2.bed  OPC-2.bed   Olig-4.bed  SMC.bed
-Astro-3.bed  ChN.bed      ExN-CA3.bed      ExN-L2-3-IT.bed  ExN-L5-IT.bed    ExN-Olf.bed    InN-Olf.bed    InN-Vip.bed   Micro-3.bed  Olig-1.bed  Olig-5.bed
-Astro-4.bed  Endo.bed     ExN-DEGLU-1.bed  ExN-L4-5-IT.bed  ExN-L6-CT.bed    InN-Calb2.bed  InN-Pvalb.bed  MSN.bed       Micro-4.bed  Olig-2.bed  Olig-6.bed
-zy_22111220045@dsw-20921-546b84cf5f-l4pqg:/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type$ find . -maxdepth 1 -type f -name "*.bed" -size 0 -print
+> find . -maxdepth 1 -type f -name "*.bed" -size 0 -print
 ./ExN-CA2.bed
 ./ExN-DEGLU-1.bed
+#可以得知这两个是空的，直接删除了事。这个是做DAR的结果，这一部分经常容易空。
 ```
+
+
 
 每日一个没用小技巧：
 
