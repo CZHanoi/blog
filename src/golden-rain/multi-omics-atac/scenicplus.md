@@ -434,7 +434,7 @@ GENOME_FA="/public/home/chenzhh/udanmas/Dianmu/outs/mm10.fa"
 CHRSZS="/public/home/chenzhh/udanmas/Dianmu/outs/mm10.chrom.sizes"
 REG_BED="/public/home/chenzhh/udanmas/Dianmu/outs/consensus_peak_calling/consensus_regions.bed"
 OUT_FA="/public/home/chenzhh/udanmas/Dianmu/outs/mouse_brain_with1kb_bg.fa"
-PADDING=1000
+# PADDING=1000   这个不要加！加完内存爆炸
 
 SCRIPT_DIR="/public/home/chenzhh/packgae_python/create_cisTarget_databases"
 CREATE_SH="${SCRIPT_DIR}/create_fasta_with_padded_bg_from_bed.sh"
@@ -561,15 +561,171 @@ mamba install -c bioconda bedtools
 
 
 
+终于啊，终于，我们终于克服万难，但现在scenicplus的流程才刚刚开始（
+
+他们使用了一个`Snakemake`的工具将整个流程进行封装，这样我们需要做的只有写一个`config.ymal`文件指向我们的文件（以及无休无止的对输入文件的Debug→因为流程的代码碰也不能碰）
+
+### ①配置
+
+对于这个文件的写入，有以下几个文件需要格外说明：
+
+```yaml
+input_data:
+  cisTopic_obj_fname: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/cistopic_obj.pkl"
+#选定好最佳的lda的model、指定多个topic之后保存的文件。可以暂不进行Normalization、Impute等操作，因为这些都会作为运行的Job；
+  GEX_anndata_fname: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/rna.h5ad"
+#Gene Expression单独拎出来的h5ad文件。barcodes需要与cistopic_obj一致 （cistopic_obj.cell_data.index 和 cistopic_obj.cell_names）
+  region_set_folder: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets"
+#保存bed文件的目录。这一部分是发生大多报错的十字路口；一方面，需要删除掉所有的空文件`stat`；另一方面文件夹的结构和命名要规范；
+  ctx_db_fname: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/mm10_screen_v10_clust.regions_vs_motifs.rankings.feather"
+#regions_vs_motifs.rankings.feather文件。目前我只跑通了使用官方提供的文件的流程。
+  dem_db_fname: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/mm10_screen_v10_clust.regions_vs_motifs.scores.feather"
+#regions_vs_motifs.rankings.feather文件。目前我只跑通了使用官方提供的文件的流程。
+  path_to_motif_annotations: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Data/aertslab_motif_colleciton/v10nr_clust_public/snapshots/motifs-v10-nr.mgi-m0.00001-o0.0.tbl"
+#motif注释文件，来自官网。
+output_data:
+  # output for prepare_GEX_ACC .h5mu
+  combined_GEX_ACC_mudata: "ACC_GEX.h5mu"
+  # output for motif enrichment results .hdf5
+  dem_result_fname: "dem_results.hdf5"
+  ctx_result_fname: "ctx_results.hdf5"
+  # output html for motif enrichment results .html
+  output_fname_dem_html: "dem_results.html"
+  output_fname_ctx_html: "ctx_results.html"
+  # output for prepare_menr .h5ad
+  cistromes_direct: "cistromes_direct.h5ad"
+  cistromes_extended: "cistromes_extended.h5ad"
+  # output tf names .txt
+  tf_names: "tf_names.txt"
+  # output for download_genome_annotations .tsv
+  genome_annotation: "genome_annotation.tsv"
+  chromsizes: "chromsizes.tsv"
+  # output for search_space .tsb
+  search_space: "search_space.tsv"
+  # output tf_to_gene .tsv
+  tf_to_gene_adjacencies: "tf_to_gene_adj.tsv"
+  # output region_to_gene .tsv
+  region_to_gene_adjacencies: "region_to_gene_adj.tsv"
+  # output eGRN .tsv
+  eRegulons_direct: "eRegulon_direct.tsv"
+  eRegulons_extended: "eRegulons_extended.tsv"
+  # output AUCell .h5mu
+  AUCell_direct: "AUCell_direct.h5mu"
+  AUCell_extended: "AUCell_extended.h5mu"
+  # output scplus mudata .h5mu
+  scplus_mdata: "scplusmdata.h5mu"
+
+params_general:
+  temp_dir: "/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/tmp"
+  n_cpu: 30
+  seed: 666
+#注意配置这些文件，容易报错。
+params_data_preparation:
+  # Params for prepare_GEX_ACC
+  bc_transform_func: "\"lambda x: f'{x}'\""
+  is_multiome: True
+  key_to_group_by: ""
+  nr_cells_per_metacells: 10
+  # Params for prepare_menr
+  direct_annotation: "Direct_annot"
+  extended_annotation: "Orthology_annot"
+  # Params for download_genome_annotations
+  species: "mmusculus"
+  #hsapiens或者mmusculus
+  biomart_host: "http://www.ensembl.org"
+  #2024年之后统一使用这个网站
+  # Params for search_space
+  search_space_upstream: "1000 150000"
+  search_space_downstream: "1000 150000"
+  search_space_extend_tss: "10 10"
+
+params_motif_enrichment:
+  species: "mus_musculus"
+  #homo_sapiens或者mus_musculus
+  annotation_version: "v10nr_clust"
+  motif_similarity_fdr: 0.001
+  orthologous_identity_threshold: 0.0
+  annotations_to_use: "Direct_annot Orthology_annot"
+  fraction_overlap_w_dem_database: 0.4
+  dem_max_bg_regions: 500
+  dem_balance_number_of_promoters: True
+  dem_promoter_space: 1_000
+  dem_adj_pval_thr: 0.05
+  dem_log2fc_thr: 1.0
+  dem_mean_fg_thr: 0.0
+  dem_motif_hit_thr: 3.0
+  fraction_overlap_w_ctx_database: 0.4
+  ctx_auc_threshold: 0.005
+  ctx_nes_threshold: 3.0
+  ctx_rank_threshold: 0.05
 
 
 
+
+params_inference:
+  # Params for tf_to_gene
+  tf_to_gene_importance_method: "GBM"
+  # Params regions_to_gene
+  region_to_gene_importance_method: "GBM"
+  region_to_gene_correlation_method: "SR"
+  # Params for eGRN inference
+  order_regions_to_genes_by: "importance"
+  order_TFs_to_genes_by: "importance"
+  gsea_n_perm: 1000
+  quantile_thresholds_region_to_gene: "0.85 0.90 0.95"
+  top_n_regionTogenes_per_gene: "5 10 15"
+  top_n_regionTogenes_per_region: ""
+  min_regions_per_gene: 0
+  rho_threshold: 0.05
+  min_target_genes: 10
 
 
 ```
-wget -O data/fragments.tsv.gz https://cf.10xgenomics.com/samples/cell-arc/1.0.0/human_brain_3k/human_brain_3k_atac_fragments.tsv.gz
-wget -O data/fragments.tsv.gz.tbi https://cf.10xgenomics.com/samples/cell-arc/1.0.0/human_brain_3k/human_brain_3k_atac_fragments.tsv.gz.tbi
-wget -O data/cell_data.tsv https://raw.githubusercontent.com/aertslab/pycisTopic/polars/data/cell_data_human_cerebellum.tsv
+
+然后在端口运行：
+
+```bash
+conda activate scenicplus
+snakemake --cores 30 #可以和yaml文件中不一致，经过测试以这个为主
+```
+
+
+
+```bash
+conda activate scenicplus
+cd       /public/home/chenzhh/udanmas/Lionrock/formal_scenic
+scenicplus init_snakemake --out_dir scplus_pipeline
+tree scplus_pipeline
+#scplus_pipeline/
+#└── Snakemake
+#    ├── config
+#    │   └── config.yaml
+#    └── workflow
+#        └── Snakefile
+mkdir -p outs
+mkdir -p tmp
+vim scplus_pipeline/Snakemake/config/config.yaml
+```
+
+```
+nohup snakemake --cores 20 --rerun-incomplete       > snakemake_$(date +%Y%m%d_%H%M%S).log 2>&1 &
+nohup bash run_create_fasta.sh > create_fasta_$(date +%Y%m%d_%H%M%S)_pandas223-222.log 2>&1 &
+nohup bash run_create_cistarget_db.sh > create_db_$(date +%Y%m%d_%H%M%S)_pandas223-222.log 2>&1 &
+```
+
+这个是空的
+
+```
+zy_22111220045@dsw-20921-546b84cf5f-l4pqg:/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type$ pwd
+/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type
+zy_22111220045@dsw-20921-546b84cf5f-l4pqg:/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type$ ls
+Astro-1.bed  Astro-5.bed  ExN-CA1.bed      ExN-DEGLU-2.bed  ExN-L5-6-NP.bed  ExN-L6-IT.bed  InN-Erbb4.bed  InN-Sncg.bed  Micro-1.bed  OPC-1.bed   Olig-3.bed  Peri.bed
+Astro-2.bed  Astro-6.bed  ExN-CA2.bed      ExN-DG.bed       ExN-L5-ET.bed    ExN-L6b.bed    InN-Lamp5.bed  InN-Sst.bed   Micro-2.bed  OPC-2.bed   Olig-4.bed  SMC.bed
+Astro-3.bed  ChN.bed      ExN-CA3.bed      ExN-L2-3-IT.bed  ExN-L5-IT.bed    ExN-Olf.bed    InN-Olf.bed    InN-Vip.bed   Micro-3.bed  Olig-1.bed  Olig-5.bed
+Astro-4.bed  Endo.bed     ExN-DEGLU-1.bed  ExN-L4-5-IT.bed  ExN-L6-CT.bed    InN-Calb2.bed  InN-Pvalb.bed  MSN.bed       Micro-4.bed  Olig-2.bed  Olig-6.bed
+zy_22111220045@dsw-20921-546b84cf5f-l4pqg:/cpfs01/projects-HDD/cfff-afe2df89e32e_HDD/zy_22111220045/Farewell/Lionrock/outs/region_sets/DARs_cell_type$ find . -maxdepth 1 -type f -name "*.bed" -size 0 -print
+./ExN-CA2.bed
+./ExN-DEGLU-1.bed
 ```
 
 每日一个没用小技巧：
