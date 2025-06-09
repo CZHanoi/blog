@@ -15,7 +15,7 @@ article: true
 
 
 
-
+[TOC]
 
 链接指路:[SCENIC+ Stein Aerts lab seminar.](https://www.youtube.com/watch?v=QW63LLd1XC8&t=2079s)
 
@@ -434,7 +434,7 @@ GENOME_FA="/public/home/chenzhh/udanmas/Dianmu/outs/mm10.fa"
 CHRSZS="/public/home/chenzhh/udanmas/Dianmu/outs/mm10.chrom.sizes"
 REG_BED="/public/home/chenzhh/udanmas/Dianmu/outs/consensus_peak_calling/consensus_regions.bed"
 OUT_FA="/public/home/chenzhh/udanmas/Dianmu/outs/mouse_brain_with1kb_bg.fa"
-# PADDING=1000   这个不要加！加完内存爆炸
+PADDING=1000
 
 SCRIPT_DIR="/public/home/chenzhh/packgae_python/create_cisTarget_databases"
 CREATE_SH="${SCRIPT_DIR}/create_fasta_with_padded_bg_from_bed.sh"
@@ -537,8 +537,26 @@ chmod a+x liftOver bigWigAverageOverBed
 micromamba activate create_cistarget_databases
 
 mamba install -c bioconda bedtools
-#以及推荐环境安装时，panda版本2.2.2无论如何都会报错，事实上代码只使用pandas生成motifs的列表（，并不影响全局计算因素(显然的),所以请更换为2.2.3
 
+
+```
+
+以及推荐环境安装时,推荐环境代码得到的环境能跑通那就有鬼了，一些很重要的点包括但不限于`bedtools`应该大于2.31版本他们也是只字未提（默认会直接安装2.14)
+
+下面是我推荐的**环境**
+
+```yaml
+name: create_cistarget_databases
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy=1.21.6
+  - pandas=1.5.3
+  - pyarrow>=7.0.0
+  - numba=0.56.4
+  - python-flatbuffers
+  - bedtools=2.31.1
 ```
 
 
@@ -707,21 +725,25 @@ conda activate scenicplus
 snakemake --cores 30 #可以和yaml文件中不一致，经过测试以这个为主
 ```
 
-### ②八阿哥
-
-遇到的bug包括但不限于数据不行、库不行；环境不行、人不行。下面我们逐步介绍我们对每个bug的解（妥）决（协）；
-
-（1）``
-
-这个bug体现为啥也没说还没开始就出师未捷身先死；
 
 
+或者加入到nohup全家桶→
 
-```
-nohup snakemake --cores 20 --rerun-incomplete       > snakemake_$(date +%Y%m%d_%H%M%S).log 2>&1 &
+```bash
 nohup bash run_create_fasta.sh > create_fasta_$(date +%Y%m%d_%H%M%S)_pandas223-222.log 2>&1 &
 nohup bash run_create_cistarget_db.sh > create_db_$(date +%Y%m%d_%H%M%S)_pandas223-222.log 2>&1 &
+nohup snakemake --cores 20 --rerun-incomplete       > snakemake_$(date +%Y%m%d_%H%M%S).log 2>&1 &
 ```
+
+
+
+### ②八阿哥
+
+遇到的bug包括但不限于**数据不行、库不行；环境不行、人不行**……下面我们逐步介绍我们对每个bug的解（妥）决（协）；
+
+（1）`IndexError: list index out of range`
+
+bug一般出现在第一个任务`localrule motif_enrichment_cistarget`，体现为啥也没说还没开始就出师未捷身先死；
 
 
 
@@ -734,7 +756,255 @@ nohup bash run_create_cistarget_db.sh > create_db_$(date +%Y%m%d_%H%M%S)_pandas2
 #可以得知这两个是空的，直接删除了事。这个是做DAR的结果，这一部分经常容易空。
 ```
 
+（2）`ValueError: Length mismatch: Expected axis has 0 elements, new values have 3 elements`
 
+bug表现为：
+
+```bash
+localrule motif_enrichment_cistarget:
+2025-06-04 00:12:07,271 cisTarget    INFO     Reading cisTarget database
+joblib.externals.loky.process_executor._RemoteTraceback:
+File "/home/zy_22111220045/miniconda3/envs/scenicplus/lib/python3.11/site-packages/joblib/parallel.py", line 754, in _return_or_raise
+    raise self._result
+ValueError: Length mismatch: Expected axis has 0 elements, new values have 3 elements
+```
+
+通过反复测试，问题显然是上一步建库操作的问题。
+
+
+
+### ③结果解释&下游分析
+
+<1>scplus_mdata.uns["direct_e_regulon_metadata"]
+
+
+
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Region</th>
+      <th>Gene</th>
+      <th>importance_R2G</th>
+      <th>rho_R2G</th>
+      <th>importance_x_rho</th>
+      <th>importance_x_abs_rho</th>
+      <th>TF</th>
+      <th>is_extended</th>
+      <th>eRegulon_name</th>
+      <th>Gene_signature_name</th>
+      <th>Region_signature_name</th>
+      <th>importance_TF2G</th>
+      <th>regulation</th>
+      <th>rho_TF2G</th>
+      <th>triplet_rank</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>chr5:125638655-125639155</td>
+      <td>Tmem132b</td>
+      <td>0.000466</td>
+      <td>0.057858</td>
+      <td>0.000027</td>
+      <td>0.000027</td>
+      <td>Ahctf1</td>
+      <td>False</td>
+      <td>Ahctf1_direct_+/+</td>
+      <td>Ahctf1_direct_+/+_(39g)</td>
+      <td>Ahctf1_direct_+/+_(42r)</td>
+      <td>0.581941</td>
+      <td>1</td>
+      <td>0.106458</td>
+      <td>53472</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>chr11:35798818-35799318</td>
+      <td>Tenm2</td>
+      <td>0.000077</td>
+      <td>0.416579</td>
+      <td>0.000032</td>
+      <td>0.000032</td>
+      <td>Ahctf1</td>
+      <td>False</td>
+      <td>Ahctf1_direct_+/+</td>
+      <td>Ahctf1_direct_+/+_(39g)</td>
+      <td>Ahctf1_direct_+/+_(42r)</td>
+      <td>0.614399</td>
+      <td>1</td>
+      <td>0.155765</td>
+      <td>56352</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>chr15:8169326-8169826</td>
+      <td>Cplane1</td>
+      <td>0.148071</td>
+      <td>0.453076</td>
+      <td>0.067087</td>
+      <td>0.067087</td>
+      <td>Ahctf1</td>
+      <td>False</td>
+      <td>Ahctf1_direct_+/+</td>
+      <td>Ahctf1_direct_+/+_(39g)</td>
+      <td>Ahctf1_direct_+/+_(42r)</td>
+      <td>0.332098</td>
+      <td>1</td>
+      <td>0.115916</td>
+      <td>5396</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>chr16:95702923-95703423</td>
+      <td>Brwd1</td>
+      <td>0.064941</td>
+      <td>0.166287</td>
+      <td>0.010799</td>
+      <td>0.010799</td>
+      <td>Ahctf1</td>
+      <td>False</td>
+      <td>Ahctf1_direct_+/+</td>
+      <td>Ahctf1_direct_+/+_(39g)</td>
+      <td>Ahctf1_direct_+/+_(42r)</td>
+      <td>0.579776</td>
+      <td>1</td>
+      <td>0.073294</td>
+      <td>11180</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>chr5:150235924-150236424</td>
+      <td>Fry</td>
+      <td>0.000058</td>
+      <td>0.054841</td>
+      <td>0.000003</td>
+      <td>0.000003</td>
+      <td>Ahctf1</td>
+      <td>False</td>
+      <td>Ahctf1_direct_+/+</td>
+      <td>Ahctf1_direct_+/+_(39g)</td>
+      <td>Ahctf1_direct_+/+_(42r)</td>
+      <td>0.606757</td>
+      <td>1</td>
+      <td>0.122811</td>
+      <td>56195</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>58282</th>
+      <td>chr15:54571087-54571587</td>
+      <td>Enpp2</td>
+      <td>0.002650</td>
+      <td>-0.357639</td>
+      <td>-0.000948</td>
+      <td>0.000948</td>
+      <td>Zeb1</td>
+      <td>False</td>
+      <td>Zeb1_direct_-/-</td>
+      <td>Zeb1_direct_-/-_(32g)</td>
+      <td>Zeb1_direct_-/-_(48r)</td>
+      <td>10.831843</td>
+      <td>-1</td>
+      <td>-0.386763</td>
+      <td>4901</td>
+    </tr>
+    <tr>
+      <th>58283</th>
+      <td>chr19:10261259-10261759</td>
+      <td>Myrf</td>
+      <td>0.000008</td>
+      <td>-0.229283</td>
+      <td>-0.000002</td>
+      <td>0.000002</td>
+      <td>Zeb1</td>
+      <td>False</td>
+      <td>Zeb1_direct_-/-</td>
+      <td>Zeb1_direct_-/-_(32g)</td>
+      <td>Zeb1_direct_-/-_(48r)</td>
+      <td>2.413886</td>
+      <td>-1</td>
+      <td>-0.324805</td>
+      <td>50853</td>
+    </tr>
+    <tr>
+      <th>58284</th>
+      <td>chr2:127518216-127518716</td>
+      <td>Mal</td>
+      <td>0.002490</td>
+      <td>-0.479707</td>
+      <td>-0.001194</td>
+      <td>0.001194</td>
+      <td>Zeb1</td>
+      <td>False</td>
+      <td>Zeb1_direct_-/-</td>
+      <td>Zeb1_direct_-/-_(32g)</td>
+      <td>Zeb1_direct_-/-_(48r)</td>
+      <td>6.385099</td>
+      <td>-1</td>
+      <td>-0.371317</td>
+      <td>18872</td>
+    </tr>
+    <tr>
+      <th>58285</th>
+      <td>chr1:55449142-55449642</td>
+      <td>Plcl1</td>
+      <td>0.001321</td>
+      <td>-0.161939</td>
+      <td>-0.000214</td>
+      <td>0.000214</td>
+      <td>Zeb1</td>
+      <td>False</td>
+      <td>Zeb1_direct_-/-</td>
+      <td>Zeb1_direct_-/-_(32g)</td>
+      <td>Zeb1_direct_-/-_(48r)</td>
+      <td>1.779930</td>
+      <td>-1</td>
+      <td>-0.215149</td>
+      <td>45186</td>
+    </tr>
+    <tr>
+      <th>58286</th>
+      <td>chr6:85187372-85187872</td>
+      <td>Exoc6b</td>
+      <td>0.003271</td>
+      <td>-0.101657</td>
+      <td>-0.000333</td>
+      <td>0.000333</td>
+      <td>Zeb1</td>
+      <td>False</td>
+      <td>Zeb1_direct_-/-</td>
+      <td>Zeb1_direct_-/-_(32g)</td>
+      <td>Zeb1_direct_-/-_(48r)</td>
+      <td>2.747754</td>
+      <td>-1</td>
+      <td>-0.204703</td>
+      <td>34634</td>
+    </tr>
+  </tbody>
+</table>
+<p>58287 rows × 15 columns</p>
+
+
+<2>
 
 每日一个没用小技巧：
 
