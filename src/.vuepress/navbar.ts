@@ -32,6 +32,7 @@ export default navbar([
     prefix: "/history/",
     children: [],
   },
+  { text: 'Bodhi', link: '/bodhi/' },
 
   // ────────── 命名表 ──────────
   {
