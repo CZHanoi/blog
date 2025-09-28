@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { withBase } from "vuepress/client";
 import Navbar from "@theme-hope/modules/navbar/components/Navbar";
 
-/** === 学期起始（周一）——按需改成你的真实起始周一 === */
+/** === 学期起始（周一） —— 按需修改 === */
 const SEMESTER_START_ISO = "2025-09-08"; // 周一
 const SEM_START = new Date(SEMESTER_START_ISO + "T00:00:00");
 
@@ -21,7 +21,7 @@ const SLOT_MM = [
   [ 15*60+20,16*60+5 ], // 8: 15:20-16:05
   [ 16*60+15,17*60    ],// 9: 16:15-17:00
   [ 17*60+10,17*60+55], // 10: 17:10-17:55
-  [ 18*60,   19*60+15], // 11: 18:30-19:15（注：保证 1 行 56px 的逻辑不变）
+  [ 18*60+30,19*60+15], // ✅ 11: 18:30-19:15（修正）
   [ 19*60+25,20*60+10], // 12: 19:25-20:10
   [ 20*60+20,21*60+5 ], // 13: 20:20-21:05
   [ 21*60+15,22*60   ], // 14: 21:15-22:00
@@ -44,7 +44,7 @@ const SLOTS = [
 ];
 const WD = ["一","二","三","四","五","六","日"];
 
-/** === 数据结构（保持不变） === */
+/** === 数据结构（不改） === */
 type WeeklyRow = {
   course:string; weeks:string; weekday:string; periods?:string;
   start_time?:string; end_time?:string;
@@ -59,7 +59,7 @@ type EventRow  = {
 const weekly = ref<WeeklyRow[]>([]);
 const events = ref<EventRow[]>([]);
 
-/** === CSV 载入 & 解析（保持不变） === */
+/** === CSV 载入 & 解析（不改） === */
 function parseCSV(txt:string){
   const lines = txt.trim().split(/\r?\n/);
   const head = lines.shift()!.split(",");
@@ -79,7 +79,7 @@ async function loadAll(){
   events.value = parseCSV(eTxt) as EventRow[];
 }
 
-/** === 工具（保持不变） === */
+/** === 工具（不改） === */
 function expandWeeks(expr:string):number[]{
   if(!expr) return [];
   return expr.split(",").flatMap(seg=>{
@@ -88,7 +88,7 @@ function expandWeeks(expr:string):number[]{
     return [+seg];
   });
 }
-function periods(expr?:string){ // "3-4"/"3-3"/"3"
+function periods(expr?:string){
   let m = expr?.match?.(/^(\d+)-(\d+)$/);
   if(m) return { s:+m[1], e:+m[2] };
   m = expr?.match?.(/^(\d+)$/);
@@ -104,12 +104,12 @@ function toMin(hhmm?:string){
   return (+m[1])*60 + (+m[2]);
 }
 
-/** === 颜色（同课同色；示教灰浅化；考试红）=== */
+/** === 颜色（不改） === */
 function hueHash(key:string){ let h=0; for(const ch of key) h=(h*33+ch.charCodeAt(0))%360; return h; }
 function colorFor(key:string){ return `hsl(${hueHash(key)} 70% 60%)`; }
 function grayify(c:string){ return `color-mix(in oklab, ${c} 35%, #999 65%)`; }
 
-/** === 时间 → 节次 映射（保持不变） === */
+/** === 时间 → 节次（不改） === */
 function timeToPeriods(startHHMM?:string, endHHMM?:string){
   const sMin = toMin(startHHMM), eMin = toMin(endHHMM);
   if(sMin==null || eMin==null) return { s:0, e:0 };
@@ -120,14 +120,14 @@ function timeToPeriods(startHHMM?:string, endHHMM?:string){
   return { s:sIdx, e:eIdx };
 }
 
-/** === 生成整学期的日列（保持不变） === */
+/** === 生成整学期的日列（不改） === */
 const maxWeek = computed(()=>{
   const w1 = weekly.value.flatMap(r=>expandWeeks(r.weeks));
   const w2 = events.value.flatMap(e=> e.week ? expandWeeks(e.week) : [] );
   const maxW = Math.max(1, ...(w1.length? w1:[1]), ...(w2.length? w2:[1]));
   return Math.min(30, maxW);
 });
-const allDays = computed(()=>{  // [{week, wd, date}]
+const allDays = computed(()=>{
   const arr:{week:number; wd:number; date:Date}[] = [];
   for(let w=1; w<=maxWeek.value; w++){
     for(let i=0;i<7;i++){
@@ -138,12 +138,11 @@ const allDays = computed(()=>{  // [{week, wd, date}]
   return arr;
 });
 
-/** === 把 weekly + events 展开到具体“日期列”的课块（保持不变） === */
+/** === 展开 weekly + events 到具体日期（不改） === */
 type Cell = { title:string; sub?:string; s:number; e:number; color:string; isExam?:boolean };
 const grid = computed<Record<string, Cell[]>>(()=> {
   const g:Record<string,Cell[]> = {};
 
-  // weekly → 具体日期
   for(const r of weekly.value){
     const weeks = expandWeeks(r.weeks);
     const dayIndex = wdIdx(r.weekday);
@@ -159,7 +158,6 @@ const grid = computed<Record<string, Cell[]>>(()=> {
     }
   }
 
-  // events
   for(const e of events.value){
     const isExam = (e.type||"") === "exam";
     const baseColor = colorFor(e.colorKey || e.course || e.title);
@@ -189,31 +187,28 @@ const grid = computed<Record<string, Cell[]>>(()=> {
     }
   }
 
-  // 列内排序
   for(const k of Object.keys(g)){
     g[k].sort((a,b)=> a.s - b.s || a.e - b.e || a.title.localeCompare(b.title));
   }
   return g;
 });
 
-/** ========= 关键修复：动态测量表头高度，写入 CSS 变量 ========= */
+/** === 关键修复：动态测量表头高度，写入 CSS 变量 === */
 const weeksHeadRef = ref<HTMLElement | null>(null);
 const daysHeadRef  = ref<HTMLElement | null>(null);
 const boardRef     = ref<HTMLElement | null>(null);
 
-const headsH = ref(108); // 回退默认值（48 + 60）
+const headsH = ref(108); // 回退（48 + 60）
 
 function applyHeadsH(px:number){
   headsH.value = px;
-  // 将精确像素写入根容器自定义属性（左右两侧统一用它）
   boardRef.value?.style.setProperty("--heads-h", `${px}px`);
 }
-
 function measureHeads(){
   const a = weeksHeadRef.value;
   const b = daysHeadRef.value;
   if(!a || !b) return;
-  // 用 offsetHeight（含边框）避免边框造成 1px 漂移
+  // 含 padding + border，避免 1px 偏差（MDN: offsetHeight）
   const px = a.offsetHeight + b.offsetHeight;
   applyHeadsH(px);
 }
@@ -225,7 +220,6 @@ onMounted(async ()=>{
   await loadAll();
   await nextTick();
   measureHeads();
-  // 监听尺寸变化（字体缩放、窗口变化、暗色切换等）
   roA = new ResizeObserver(measureHeads);
   roB = new ResizeObserver(measureHeads);
   weeksHeadRef.value && roA.observe(weeksHeadRef.value);
@@ -247,7 +241,7 @@ onUnmounted(()=>{
       </header>
 
       <section class="board" ref="boardRef">
-        <!-- 左：时间轴（顶部“垫层”精准等于右侧两个表头的总高度） -->
+        <!-- 左：时间轴（顶部“垫层”精准等于右侧两个表头总高度） -->
         <aside class="times">
           <div class="times-head">小节 / 时间</div>
           <div class="times-body">
@@ -274,7 +268,7 @@ onUnmounted(()=>{
 
           <div class="days-body">
             <div v-for="d in allDays" :key="'c'+fmtDate(d.date)" class="day-col">
-              <!-- 课块（背景自绘横线，取消额外 rowline DOM，避免1px累积误差） -->
+              <!-- 课块 -->
               <div
                 v-for="c in (grid[fmtDate(d.date)] || [])"
                 :key="c.title + c.s + '-' + c.e + (c.sub||'')"
@@ -313,13 +307,12 @@ onUnmounted(()=>{
 .board{
   --row-h: 56px;     /* 行高：左/右统一使用 */
   --rows: 14;
-  --col-w: 240px;    /* 单日日列宽度 */
+  --col-w: 240px;    /* 单日列宽（桌面） */
   --gap: 10px;       /* 日列间距（周头也用它来计算每周宽） */
   --pad: 8px;        /* 左右内边距（统一） */
-  --weeks-h: 48px;   /* 周数条高度（用于初始回退） */
-  --dhead-h: 60px;   /* 日期头高度（用于初始回退） */
-  /* 注意：--heads-h 动态写入实际像素，下面仅作为回退值 */
-  --heads-h: calc(var(--weeks-h) + var(--dhead-h));
+  --weeks-h: 48px;   /* 周数条高度（回退） */
+  --dhead-h: 60px;   /* 日期头高度（回退） */
+  --heads-h: calc(var(--weeks-h) + var(--dhead-h)); /* 将被 JS 覆盖为像素值 */
   flex:1 1 auto; min-height:0;
   display:grid; grid-template-columns: 300px 1fr; gap:12px;
 }
@@ -334,12 +327,12 @@ onUnmounted(()=>{
   padding:.6rem 1rem;background:#1976d2;color:#fff;font-weight:700;text-align:center
 }
 .times-body{
-  position:relative; /* 让伪元素定位 */
+  position:relative;
   flex:1 1 auto; min-height:0;
   display:grid;
   grid-template-rows: var(--heads-h) repeat(var(--rows), var(--row-h));
 }
-/* —— 用伪元素绘制“行线”，与右侧完全一致 —— */
+/* 横线：与右侧完全一致（repeating-linear-gradient） */
 .times-body::after{
   content:"";
   position:absolute;
@@ -359,7 +352,6 @@ onUnmounted(()=>{
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
-.shim{ /* 高度由脚本动态设置；不加边框，避免 +1px 偏差 */ }
 .time-row{
   display:grid; grid-template-columns:110px 1fr; align-items:center;
   height: var(--row-h);
@@ -369,15 +361,17 @@ onUnmounted(()=>{
 .no{font-weight:700;color:#333}
 .range{opacity:.85}
 
-/* 右侧统一滚动容器：水平 + 纵向都在这里滚，头部 sticky 与主体同步 */
+/* 右侧统一滚动容器：开启触控优化与滚动捕捉 */
 .canvas{
   height:100%; min-width:0; overflow:auto;
   position:relative; display:grid;
   grid-template-rows: var(--weeks-h) var(--dhead-h) 1fr; /* 回退值；实际垫层用 --heads-h 保证左侧对齐 */
   align-items:start;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* 顶部两个条都 sticky；box-sizing 让固定高度包含 padding，避免误差 */
+/* 顶部两个条 sticky；宽度与日列保持一致 */
 .weeks-head{
   position:sticky; top:0; z-index:5; height:var(--weeks-h);
   box-sizing:border-box; padding:0 var(--pad); background:#fff; border-bottom:1px solid #e5e7eb;
@@ -406,17 +400,20 @@ onUnmounted(()=>{
 .day-head .dow{font-weight:800; line-height:1.1}
 .day-head .date{font-size:.9rem;opacity:.85; line-height:1.1}
 
-/* 主体网格：与左侧同起点；背景用 repeating-linear-gradient 精确画横线 */
+/* 主体网格：与左侧同起点；横向滚动 + Scroll Snap */
 .days-body{
   display:grid; grid-auto-flow:column; grid-auto-columns: var(--col-w);
   gap: var(--gap); padding:0 var(--pad) var(--pad) var(--pad);
+  scroll-snap-type: x mandatory; /* 让手机端一列一列对齐翻页 */ 
 }
 .day-col{
   display:grid; grid-template-rows: repeat(var(--rows), var(--row-h));
   position:relative;
   background-color:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.08);
   padding:0;
+  scroll-snap-align: start; /* 每一列都是一个吸附点 */
 
+  /* 背景横线 */
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -437,6 +434,30 @@ onUnmounted(()=>{
 .cell.exam{ background:#d32f2f !important; color:#fff !important; }
 .cell-title{font-weight:800}
 .cell-sub{opacity:.95;font-size:.85rem;margin-top:.2rem}
+
+/* —— 响应式：Pad / 手机 —— */
+/* 1) ≤ 1200px：略缩列宽和时间轴 */
+@media (max-width: 1200px){
+  .board{ grid-template-columns: 220px 1fr; }
+  .board{ --col-w: 200px; }
+}
+/* 2) ≤ 900px：进一步缩小；行高略减，字重不变，保证可读 */
+@media (max-width: 900px){
+  .board{ grid-template-columns: 160px 1fr; }
+  .board{ --col-w: 160px; --row-h: 52px; }
+  .title{ font-size:1.6rem; }
+  .time-row{ grid-template-columns: 80px 1fr; padding:0 .6rem; }
+}
+/* 3) ≤ 600px：手机重点优化 —— 一屏一列滑动 */
+@media (max-width: 600px){
+  .board{ grid-template-columns: 96px 1fr; }
+  .board{ --col-w: 86vw; --row-h: 48px; --gap: 8px; }
+  .times-head{ font-size:.9rem; padding:.5rem .6rem; }
+  .no{ font-size:.95rem; }
+  .range{ font-size:.8rem; }
+  .day-head{ padding:.2rem .2rem; }
+  .cell{ font-size:.9rem; }
+}
 
 /* 暗色调校 */
 :global(html.dark) .times{background:#1f2937;color:#e5e7eb}
