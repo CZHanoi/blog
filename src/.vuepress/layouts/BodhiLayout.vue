@@ -3,13 +3,13 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { withBase } from "vuepress/client";
 import Navbar from "@theme-hope/modules/navbar/components/Navbar";
 
-/** === 学期起始（周一） —— 按需修改 === */
+/** === 学期起始（周一） === */
 const SEMESTER_START_ISO = "2025-09-08"; // 周一
 const SEM_START = new Date(SEMESTER_START_ISO + "T00:00:00");
 
 /** === 14 节严格对齐 === */
 const ROWS = 14;
-// 每节的起止分钟（从 00:00 起的分钟数），用于时间⇄节次映射
+// 每节起止分钟（从 00:00 的分钟数），用于时间⇄节次映射
 const SLOT_MM = [
   [ 8*60,   8*60+45 ],  // 1: 08:00-08:45
   [ 8*60+55,9*60+40 ],  // 2: 08:55-09:40
@@ -79,7 +79,7 @@ async function loadAll(){
   events.value = parseCSV(eTxt) as EventRow[];
 }
 
-/** === 工具（不改） === */
+/** === 工具函数（不改） === */
 function expandWeeks(expr:string):number[]{
   if(!expr) return [];
   return expr.split(",").flatMap(seg=>{
@@ -120,7 +120,7 @@ function timeToPeriods(startHHMM?:string, endHHMM?:string){
   return { s:sIdx, e:eIdx };
 }
 
-/** === 生成整学期的日列（不改） === */
+/** === 生成整学期日列（不改） === */
 const maxWeek = computed(()=>{
   const w1 = weekly.value.flatMap(r=>expandWeeks(r.weeks));
   const w2 = events.value.flatMap(e=> e.week ? expandWeeks(e.week) : [] );
@@ -143,6 +143,7 @@ type Cell = { title:string; sub?:string; s:number; e:number; color:string; isExa
 const grid = computed<Record<string, Cell[]>>(()=> {
   const g:Record<string,Cell[]> = {};
 
+  // weekly
   for(const r of weekly.value){
     const weeks = expandWeeks(r.weeks);
     const dayIndex = wdIdx(r.weekday);
@@ -158,6 +159,7 @@ const grid = computed<Record<string, Cell[]>>(()=> {
     }
   }
 
+  // events
   for(const e of events.value){
     const isExam = (e.type||"") === "exam";
     const baseColor = colorFor(e.colorKey || e.course || e.title);
@@ -193,11 +195,10 @@ const grid = computed<Record<string, Cell[]>>(()=> {
   return g;
 });
 
-/** === 关键修复：动态测量表头高度，写入 CSS 变量 === */
+/** === 关键：动态测量右侧两条表头高度，写入 CSS 变量 === */
 const weeksHeadRef = ref<HTMLElement | null>(null);
 const daysHeadRef  = ref<HTMLElement | null>(null);
 const boardRef     = ref<HTMLElement | null>(null);
-
 const headsH = ref(108); // 回退（48 + 60）
 
 function applyHeadsH(px:number){
@@ -208,8 +209,7 @@ function measureHeads(){
   const a = weeksHeadRef.value;
   const b = daysHeadRef.value;
   if(!a || !b) return;
-  // 含 padding + border，避免 1px 偏差（MDN: offsetHeight）
-  const px = a.offsetHeight + b.offsetHeight;
+  const px = a.offsetHeight + b.offsetHeight; // 含 padding+border
   applyHeadsH(px);
 }
 
@@ -241,7 +241,7 @@ onUnmounted(()=>{
       </header>
 
       <section class="board" ref="boardRef">
-        <!-- 左：时间轴（顶部“垫层”精准等于右侧两个表头总高度） -->
+        <!-- 左：时间轴 -->
         <aside class="times">
           <div class="times-head">小节 / 时间</div>
           <div class="times-body">
@@ -253,7 +253,7 @@ onUnmounted(()=>{
           </div>
         </aside>
 
-        <!-- 右：统一滚动容器（横向+纵向）；周数条与日期头 sticky，三者同容器滚动 -->
+        <!-- 右：统一滚动容器 -->
         <div class="canvas">
           <div class="weeks-head" ref="weeksHeadRef">
             <div v-for="w in maxWeek" :key="'w'+w" class="week-tag">第 {{ w }} 周</div>
@@ -268,7 +268,6 @@ onUnmounted(()=>{
 
           <div class="days-body">
             <div v-for="d in allDays" :key="'c'+fmtDate(d.date)" class="day-col">
-              <!-- 课块 -->
               <div
                 v-for="c in (grid[fmtDate(d.date)] || [])"
                 :key="c.title + c.s + '-' + c.e + (c.sub||'')"
@@ -303,21 +302,21 @@ onUnmounted(()=>{
 .title{font:700 2rem "Cinzel Decorative",serif;color:#7646ff}
 .meta{opacity:.8}
 
-/* 主板参数：统一变量，确保尺寸/间距一致 */
+/* 主板参数 */
 .board{
-  --row-h: 56px;     /* 行高：左/右统一使用 */
+  --row-h: 56px;     /* 行高 */
   --rows: 14;
   --col-w: 240px;    /* 单日列宽（桌面） */
-  --gap: 10px;       /* 日列间距（周头也用它来计算每周宽） */
-  --pad: 8px;        /* 左右内边距（统一） */
+  --gap: 10px;       /* 日列间距 */
+  --pad: 8px;
   --weeks-h: 48px;   /* 周数条高度（回退） */
   --dhead-h: 60px;   /* 日期头高度（回退） */
-  --heads-h: calc(var(--weeks-h) + var(--dhead-h)); /* 将被 JS 覆盖为像素值 */
+  --heads-h: calc(var(--weeks-h) + var(--dhead-h));
   flex:1 1 auto; min-height:0;
   display:grid; grid-template-columns: 300px 1fr; gap:12px;
 }
 
-/* 左侧时间轴：顶部“垫层”=右侧两条头部总高，确保首行对齐 */
+/* 左侧时间轴：横线与右侧完全一致（统一用背景渐变），起点用 --heads-h 对齐 */
 .times{
   align-self:stretch; height:100%;
   background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.1);overflow:hidden;
@@ -331,14 +330,8 @@ onUnmounted(()=>{
   flex:1 1 auto; min-height:0;
   display:grid;
   grid-template-rows: var(--heads-h) repeat(var(--rows), var(--row-h));
-}
-/* 横线：与右侧完全一致（repeating-linear-gradient） */
-.times-body::after{
-  content:"";
-  position:absolute;
-  top: var(--heads-h);
-  left: 0; right: 0; bottom: 0;
-  pointer-events:none;
+
+  /* 直接在容器背景画“行线”，起点 = 表头总高，避免 1px 漂移 */
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -347,11 +340,11 @@ onUnmounted(()=>{
       #e5e7eb calc(var(--row-h) - 1px),
       #e5e7eb var(--row-h)
     );
+  background-position: left var(--heads-h);
   background-origin: content-box;
   background-clip: content-box;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
 }
+.shim{ height: var(--heads-h); } /* 同步占位 */
 .time-row{
   display:grid; grid-template-columns:110px 1fr; align-items:center;
   height: var(--row-h);
@@ -359,19 +352,18 @@ onUnmounted(()=>{
   padding:0 .8rem;
 }
 .no{font-weight:700;color:#333}
-.range{opacity:.85}
+.range{opacity:.9}
 
-/* 右侧统一滚动容器：开启触控优化与滚动捕捉 */
+/* 右侧统一滚动容器：触控优化 + scroll snap */
 .canvas{
   height:100%; min-width:0; overflow:auto;
   position:relative; display:grid;
-  grid-template-rows: var(--weeks-h) var(--dhead-h) 1fr; /* 回退值；实际垫层用 --heads-h 保证左侧对齐 */
+  grid-template-rows: var(--weeks-h) var(--dhead-h) 1fr;
   align-items:start;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 }
 
-/* 顶部两个条 sticky；宽度与日列保持一致 */
 .weeks-head{
   position:sticky; top:0; z-index:5; height:var(--weeks-h);
   box-sizing:border-box; padding:0 var(--pad); background:#fff; border-bottom:1px solid #e5e7eb;
@@ -400,20 +392,20 @@ onUnmounted(()=>{
 .day-head .dow{font-weight:800; line-height:1.1}
 .day-head .date{font-size:.9rem;opacity:.85; line-height:1.1}
 
-/* 主体网格：与左侧同起点；横向滚动 + Scroll Snap */
+/* 主体网格：列吸附 + 与左侧同样的“行线” */
 .days-body{
   display:grid; grid-auto-flow:column; grid-auto-columns: var(--col-w);
   gap: var(--gap); padding:0 var(--pad) var(--pad) var(--pad);
-  scroll-snap-type: x mandatory; /* 让手机端一列一列对齐翻页 */ 
+  scroll-snap-type: x mandatory;
 }
 .day-col{
   display:grid; grid-template-rows: repeat(var(--rows), var(--row-h));
   position:relative;
   background-color:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.08);
   padding:0;
-  scroll-snap-align: start; /* 每一列都是一个吸附点 */
+  scroll-snap-align: start;
 
-  /* 背景横线 */
+  /* 背景横线：与左侧完全一致（第一条线就在第一节下沿） */
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -435,31 +427,38 @@ onUnmounted(()=>{
 .cell-title{font-weight:800}
 .cell-sub{opacity:.95;font-size:.85rem;margin-top:.2rem}
 
-/* —— 响应式：Pad / 手机 —— */
-/* 1) ≤ 1200px：略缩列宽和时间轴 */
+/* —— 响应式 —— */
+/* ≤1200px：略缩列宽与时间轴 */
 @media (max-width: 1200px){
   .board{ grid-template-columns: 220px 1fr; }
   .board{ --col-w: 200px; }
 }
-/* 2) ≤ 900px：进一步缩小；行高略减，字重不变，保证可读 */
+/* ≤900px：进一步缩小；行高略减 */
 @media (max-width: 900px){
   .board{ grid-template-columns: 160px 1fr; }
   .board{ --col-w: 160px; --row-h: 52px; }
   .title{ font-size:1.6rem; }
   .time-row{ grid-template-columns: 80px 1fr; padding:0 .6rem; }
 }
-/* 3) ≤ 600px：手机重点优化 —— 一屏一列滑动 */
+/* ≤600px：手机优化 —— 一列一屏，且“节次+时间”纵向排列、时间始终可见；列更窄 */
 @media (max-width: 600px){
   .board{ grid-template-columns: 96px 1fr; }
-  .board{ --col-w: 86vw; --row-h: 48px; --gap: 8px; }
+  .board{ --col-w: 74vw; --row-h: 48px; --gap: 8px; }
+
   .times-head{ font-size:.9rem; padding:.5rem .6rem; }
-  .no{ font-size:.95rem; }
-  .range{ font-size:.8rem; }
+  .time-row{
+    grid-template-columns: 1fr;        /* 纵向堆叠 */
+    justify-items: start;
+    padding:.2rem .5rem;
+  }
+  .no{ font-size:.95rem; line-height:1.1; }
+  .range{ font-size:.85rem; opacity:.95; line-height:1.1; }
+
   .day-head{ padding:.2rem .2rem; }
   .cell{ font-size:.9rem; }
 }
 
-/* 暗色调校 */
+/* 暗色 */
 :global(html.dark) .times{background:#1f2937;color:#e5e7eb}
 :global(html.dark) .week-tag{background:#0ea5e9}
 :global(html.dark) .days-head{background:#0b1f33;border-color:#14324f}
