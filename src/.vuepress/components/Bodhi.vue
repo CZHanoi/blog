@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { withBase } from "vuepress/client";
 
 /** === 学期起始（周一）——按需改成你的真实起始周一 === */
@@ -52,7 +52,6 @@ async function loadAll(){
   weekly.value = parseCSV(wTxt) as WeeklyRow[];
   events.value = parseCSV(eTxt) as EventRow[];
 }
-onMounted(loadAll);
 
 /** === 工具 === */
 function expandWeeks(expr:string):number[]{
@@ -153,6 +152,28 @@ const grid = computed<Record<string, Cell[]>>(()=> {
   }
   return g;
 });
+
+/** === 今日滚动 & 高亮 === */
+const todayStr = fmtDate(new Date());
+const canvasRef = ref<HTMLElement|null>(null);
+
+function scrollToToday(){
+  nextTick(()=>{
+    const canvas = canvasRef.value;
+    if(!canvas) return;
+    const el = canvas.querySelector<HTMLElement>(`.day-col[data-date="${todayStr}"]`);
+    if(!el) return;
+    const left = el.offsetLeft - 8; // 少许内边距
+    canvas.scrollTo({ left, behavior: "auto" });
+  });
+}
+
+onMounted(async ()=>{
+  await loadAll();
+  scrollToToday();
+  window.addEventListener("resize", scrollToToday);
+});
+onBeforeUnmount(()=> window.removeEventListener("resize", scrollToToday));
 </script>
 
 <template>
@@ -166,7 +187,10 @@ const grid = computed<Record<string, Cell[]>>(()=> {
     <section class="board">
       <!-- 左：时间轴（与右侧网格严格 1:1 行高） -->
       <aside class="times">
-        <div class="times-head">小节 / 时间</div>
+        <!-- ① 与右侧头部对齐，不留多余的顶部留白 -->
+        <div class="times-head">
+          小节 / 时间
+        </div>
         <div class="times-body">
           <div v-for="s in SLOTS" :key="s.i" class="time-row">
             <div class="no">第{{ s.i }}节</div>
@@ -176,20 +200,31 @@ const grid = computed<Record<string, Cell[]>>(()=> {
       </aside>
 
       <!-- 右：统一滚动容器（横向+纵向）；头部与网格一起动 -->
-      <div class="canvas">
+      <div class="canvas" ref="canvasRef">
         <div class="weeks-head">
           <div v-for="w in maxWeek" :key="'w'+w" class="week-tag">第 {{ w }} 周</div>
         </div>
 
         <div class="days-head">
-          <div v-for="d in allDays" :key="'h'+fmtDate(d.date)" class="day-head">
+          <div
+            v-for="d in allDays"
+            :key="'h'+fmtDate(d.date)"
+            class="day-head"
+            :class="{ today: fmtDate(d.date) === todayStr }"
+          >
             <div class="dow">星期{{ WD[d.wd] }}</div>
             <div class="date">{{ fmtDate(d.date) }}</div>
           </div>
         </div>
 
         <div class="days-body">
-          <div v-for="d in allDays" :key="'c'+fmtDate(d.date)" class="day-col">
+          <div
+            v-for="d in allDays"
+            :key="'c'+fmtDate(d.date)"
+            class="day-col"
+            :data-date="fmtDate(d.date)"
+            :class="{ today: fmtDate(d.date) === todayStr }"
+          >
             <!-- 背景横线（14 行） -->
             <div v-for="i in ROWS" :key="'r'+i" class="rowline" :class="{ noon: i===5 }"></div>
             <!-- 课块 -->
@@ -222,30 +257,42 @@ const grid = computed<Record<string, Cell[]>>(()=> {
 .title{font:700 2rem "Cinzel Decorative",serif;color:#7646ff}
 .meta{opacity:.8}
 
-/* 主板：左列时间轴 + 右侧画布；让它填满余下高度 */
+/* 主板：左列时间轴 + 右侧画布；让它填满余下高度
+   ② 响应式：桌面左列等宽于单日；移动端左列更窄、右侧尽量容纳两日 */
 .board{
   --row-h: 56px;  /* 行高：左/右统一使用 */
   --rows: 14;
-  --col-w: 240px; /* 单日日列宽度（可调大些） */
+  --col-w: 240px; /* 基础单日日列宽度（桌面可被媒体查询覆盖） */
+  --left-w: var(--col-w); /* 桌面：左列宽 = 单日日宽 */
   flex:1 1 auto; min-height:0;
-  display:grid; grid-template-columns: 280px 1fr; gap:12px;
+  display:grid; grid-template-columns: var(--left-w) 1fr; gap:12px;
 }
 
 /* 左侧时间轴（与右侧网格严格对齐） */
 .times{
-  position:sticky; top:0;
+  position:sticky;
+  /* ① 让左侧从容器顶部开始贴靠（不与页面头部重叠），并与右侧双行头部对齐 */
+  top: 0;
   align-self:stretch; height:100%;
   background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.1);overflow:hidden;
-  display:flex; flex-direction:column;
+  display:flex; flex-direction:column; min-width:0;
 }
-.times-head{padding:.6rem 1rem;background:#1976d2;color:#fff;font-weight:700;text-align:center}
+/* 左头部：高度与右侧两个 sticky 头相匹配，移除多余内边距 */
+.times-head{
+  /* 使用与右侧头相近的总高，保证主体网格第一行严格对齐 */
+  min-height: 88px; /* 约等于 weeks-head(46) + days-head(42) */
+  display:flex; align-items:center; justify-content:center;
+  padding: 0 1rem; /* ① 减少顶部留白感 */
+  background:#1976d2;color:#fff;font-weight:700;text-align:center
+}
 .times-body{flex:1 1 auto; min-height:0; display:grid; grid-template-rows: repeat(var(--rows), var(--row-h));}
 .time-row{
   display:grid; grid-template-columns:100px 1fr; align-items:center; padding:0 .8rem; border-bottom:1px dashed #e5e7eb;
+  min-width:0;
 }
 .time-row:last-child{border-bottom:none}
-.no{font-weight:700;color:#333}
-.range{opacity:.85}
+.no{font-weight:700;color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.range{opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 
 /* 右侧统一滚动容器：水平 + 垂直都在这里滚，头部一起动 */
 .canvas{
@@ -275,10 +322,16 @@ const grid = computed<Record<string, Cell[]>>(()=> {
   gap:10px; padding:6px; background:#fff; border-bottom:1px solid #e5e7eb;
 }
 .day-head{
-  background:#e3f2fd;border-radius:10px;padding:.35rem .5rem;text-align:center;display:flex;flex-direction:column;gap:.1rem
+  background:#e3f2fd;border-radius:10px;padding:.35rem .5rem;text-align:center;display:flex;flex-direction:column;gap:.1rem;
+  min-width:0;
 }
-.day-head .dow{font-weight:800}
-.day-head .date{font-size:.9rem;opacity:.85}
+.day-head .dow{font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.day-head .date{font-size:.9rem;opacity:.85; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+/* ③ 今日列头加深 */
+.day-head.today{
+  background:#cfe8ff;
+  box-shadow:inset 0 0 0 2px #93c5fd;
+}
 
 /* 主体网格：每个日列 14 行，课块用 grid-row 定位 */
 .days-body{
@@ -288,28 +341,79 @@ const grid = computed<Record<string, Cell[]>>(()=> {
 .day-col{
   display:grid;
   grid-template-rows: repeat(var(--rows), var(--row-h));
-  position:relative;
+  position:relative; min-width:0; /* 防止内容撑破列宽 */
   background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.08);
   padding:6px;
+  overflow:hidden;
+}
+/* ③ 今日列加深背景与分隔线 */
+.day-col.today{
+  background:#f2f7ff;
+  box-shadow:0 4px 14px rgba(0,0,0,.12), inset 0 0 0 2px #93c5fd;
 }
 .rowline{ border-bottom:1px dashed #eee; height:var(--row-h); }
 .rowline.noon{ border-bottom:2px solid #ddd; }
+.day-col.today .rowline{ border-bottom:1px dashed #d6e6ff; }
+.day-col.today .rowline.noon{ border-bottom:2px solid #bcd7ff; }
 
 /* 课块 */
 .cell{
   border-radius:12px;padding:.5rem .6rem;box-shadow:0 2px 8px rgba(0,0,0,.12);
   display:flex;flex-direction:column;justify-content:center;font-size:.95rem;line-height:1.25;
+  min-width:0; /* ② 防溢出 */
 }
 .cell.exam{ background:#d32f2f !important; color:#fff !important; }
-.cell-title{font-weight:800}
-.cell-sub{opacity:.95;font-size:.85rem;margin-top:.2rem}
+.cell-title{
+  font-weight:800;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.cell-sub{
+  opacity:.95;font-size:.85rem;margin-top:.2rem;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* ② 响应式改造 */
+/* 桌面及更大：左列宽 = 单日列宽（两侧对齐） */
+@media (min-width: 1024px){
+  .board{
+    --col-w: 260px;        /* 略宽一些便于阅读 */
+    --left-w: var(--col-w);
+  }
+  .time-row{ grid-template-columns: 110px 1fr; }
+}
+
+/* 平板：左列稍窄，右侧单日适中 */
+@media (min-width: 640px) and (max-width: 1023.98px){
+  .board{
+    --col-w: 220px;
+    --left-w: 160px;
+  }
+  .time-row{ grid-template-columns: 90px 1fr; }
+}
+
+/* 手机：左列更窄，右侧尽量显示两日；文本全局防溢出 */
+@media (max-width: 639.98px){
+  .board{
+    /* 视口宽 - 左列(120) - 栅格间距(12) - 右侧内边距（大致） */
+    --left-w: 120px;
+    --col-w: calc((100vw - var(--left-w) - 24px) / 2);
+  }
+  .times-head{ font-size:.95rem; }
+  .time-row{ grid-template-columns: 84px 1fr; }
+  .no, .range, .day-head .dow, .day-head .date{ font-size:.9rem; }
+  .cell{ font-size:.9rem; }
+}
 
 /* 暗色调校 */
 :global(html.dark) .times{background:#1f2937;color:#e5e7eb}
+:global(html.dark) .times-head{background:#0d3a66}
 :global(html.dark) .time-row{border-color:#3b4251}
 :global(html.dark) .week-tag{background:#0ea5e9}
 :global(html.dark) .days-head{background:#0b1f33;border-color:#14324f}
 :global(html.dark) .day-head{background:#093e66;color:#e6f3ff}
+:global(html.dark) .day-head.today{background:#0b4d86; box-shadow:inset 0 0 0 2px #3b82f6;}
 :global(html.dark) .day-col{background:#111827;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+:global(html.dark) .day-col.today{background:#0b1f33; box-shadow:0 4px 14px rgba(0,0,0,.45), inset 0 0 0 2px #3b82f6;}
 :global(html.dark) .cell{box-shadow:0 2px 8px rgba(0,0,0,.5)}
 </style>

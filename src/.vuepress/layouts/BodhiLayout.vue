@@ -3,13 +3,10 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { withBase } from "vuepress/client";
 import Navbar from "@theme-hope/modules/navbar/components/Navbar";
 
-/** === 学期起始（周一） === */
-const SEMESTER_START_ISO = "2025-09-08"; // 周一
+const SEMESTER_START_ISO = "2025-09-08"; // Monday
 const SEM_START = new Date(SEMESTER_START_ISO + "T00:00:00");
 
-/** === 14 节严格对齐 === */
 const ROWS = 14;
-// 每节起止分钟（从 00:00 的分钟数），用于时间⇄节次映射
 const SLOT_MM = [
   [ 8*60,   8*60+45 ],  // 1: 08:00-08:45
   [ 8*60+55,9*60+40 ],  // 2: 08:55-09:40
@@ -21,7 +18,7 @@ const SLOT_MM = [
   [ 15*60+20,16*60+5 ], // 8: 15:20-16:05
   [ 16*60+15,17*60    ],// 9: 16:15-17:00
   [ 17*60+10,17*60+55], // 10: 17:10-17:55
-  [ 18*60+30,19*60+15], // ✅ 11: 18:30-19:15（修正）
+  [ 18*60+30,19*60+15], // 11: 18:30-19:15
   [ 19*60+25,20*60+10], // 12: 19:25-20:10
   [ 20*60+20,21*60+5 ], // 13: 20:20-21:05
   [ 21*60+15,22*60   ], // 14: 21:15-22:00
@@ -44,22 +41,20 @@ const SLOTS = [
 ];
 const WD = ["一","二","三","四","五","六","日"];
 
-/** === 数据结构（不改） === */
 type WeeklyRow = {
   course:string; weeks:string; weekday:string; periods?:string;
   start_time?:string; end_time?:string;
   room:string; teacher?:string; type?:string
 };
 type EventRow  = {
-  title:string; date:string; start_time:string; end_time:string;
-  week:string; weekday:string; periods:string; place:string;
-  course:string; colorKey?:string; type?:string; remark?:string; teacher?:string
+  title:string; date?:string; start_time?:string; end_time?:string;
+  week?:string; weekday?:string; periods?:string; place?:string;
+  course?:string; colorKey?:string; type?:string; remark?:string; teacher?:string
 };
 
 const weekly = ref<WeeklyRow[]>([]);
 const events = ref<EventRow[]>([]);
 
-/** === CSV 载入 & 解析（不改） === */
 function parseCSV(txt:string){
   const lines = txt.trim().split(/\r?\n/);
   const head = lines.shift()!.split(",");
@@ -79,7 +74,6 @@ async function loadAll(){
   events.value = parseCSV(eTxt) as EventRow[];
 }
 
-/** === 工具函数（不改） === */
 function expandWeeks(expr:string):number[]{
   if(!expr) return [];
   return expr.split(",").flatMap(seg=>{
@@ -104,23 +98,20 @@ function toMin(hhmm?:string){
   return (+m[1])*60 + (+m[2]);
 }
 
-/** === 颜色（不改） === */
 function hueHash(key:string){ let h=0; for(const ch of key) h=(h*33+ch.charCodeAt(0))%360; return h; }
 function colorFor(key:string){ return `hsl(${hueHash(key)} 70% 60%)`; }
 function grayify(c:string){ return `color-mix(in oklab, ${c} 35%, #999 65%)`; }
 
-/** === 时间 → 节次（不改） === */
 function timeToPeriods(startHHMM?:string, endHHMM?:string){
   const sMin = toMin(startHHMM), eMin = toMin(endHHMM);
   if(sMin==null || eMin==null) return { s:0, e:0 };
   let sIdx = 1, eIdx = ROWS;
-  for(let i=0;i<ROWS;i++){ const [a,b]=SLOT_MM[i]; if(sMin <= b){ sIdx=i+1; break; } }
-  for(let i=ROWS-1;i>=0;i--){ const [a,b]=SLOT_MM[i]; if(eMin >= a){ eIdx=i+1; break; } }
+  for(let i=0;i<ROWS;i++){ const [,b]=SLOT_MM[i]; if(sMin <= b){ sIdx=i+1; break; } }
+  for(let i=ROWS-1;i>=0;i--){ const [a]=SLOT_MM[i]; if(eMin >= a){ eIdx=i+1; break; } }
   if(eIdx < sIdx) eIdx = sIdx;
   return { s:sIdx, e:eIdx };
 }
 
-/** === 生成整学期日列（不改） === */
 const maxWeek = computed(()=>{
   const w1 = weekly.value.flatMap(r=>expandWeeks(r.weeks));
   const w2 = events.value.flatMap(e=> e.week ? expandWeeks(e.week) : [] );
@@ -138,7 +129,6 @@ const allDays = computed(()=>{
   return arr;
 });
 
-/** === 展开 weekly + events 到具体日期（不改） === */
 type Cell = { title:string; sub?:string; s:number; e:number; color:string; isExam?:boolean };
 const grid = computed<Record<string, Cell[]>>(()=> {
   const g:Record<string,Cell[]> = {};
@@ -195,22 +185,67 @@ const grid = computed<Record<string, Cell[]>>(()=> {
   return g;
 });
 
-/** === 关键：动态测量右侧两条表头高度，写入 CSS 变量 === */
 const weeksHeadRef = ref<HTMLElement | null>(null);
 const daysHeadRef  = ref<HTMLElement | null>(null);
 const boardRef     = ref<HTMLElement | null>(null);
-const headsH = ref(108); // 回退（48 + 60）
+const canvasRef    = ref<HTMLElement | null>(null);
+const timesBodyRef = ref<HTMLElement | null>(null);
+const timesRef     = ref<HTMLElement | null>(null);
+
+const headsH = ref(108); // (48 + 60)
 
 function applyHeadsH(px:number){
   headsH.value = px;
+  // provide px string to CSS var users
   boardRef.value?.style.setProperty("--heads-h", `${px}px`);
 }
 function measureHeads(){
   const a = weeksHeadRef.value;
   const b = daysHeadRef.value;
   if(!a || !b) return;
-  const px = a.offsetHeight + b.offsetHeight; // 含 padding+border
-  applyHeadsH(px);
+  const ax = Math.round(a.getBoundingClientRect().height);
+  const bx = Math.round(b.getBoundingClientRect().height);
+  applyHeadsH(ax + bx);
+}
+
+const todayKey = ref<string>(fmtDate(new Date()));
+function scrollToToday() {
+  const canvas = canvasRef.value;
+  if(!canvas) return;
+  const target = canvas.querySelector<HTMLElement>(`.day-col[data-date="${todayKey.value}"]`);
+  if(!target) return;
+  const pad = parseFloat(getComputedStyle(canvas).getPropertyValue("--pad") || "8");
+  const left = (target.offsetLeft || 0) - pad;
+  canvas.scrollTo({ left, top: 0, behavior: "auto" });
+}
+
+// === Sync vertical scroll: canvas drives; timeline follows without shim ===
+let onCanvasScroll: ((ev: Event)=>void) | null = null;
+function installScrollSync(){
+  const canvas = canvasRef.value;
+  const timesBody = timesBodyRef.value;
+  if(!canvas || !timesBody) return;
+
+  canvas.style.scrollbarGutter = "stable both-edges";
+
+  onCanvasScroll = () => {
+    const y = Math.round(canvas.scrollTop);
+    // supply px unit to CSS var
+    timesBody.style.setProperty("--vscroll", `${y}px`);
+  };
+  canvas.addEventListener("scroll", onCanvasScroll, { passive: true });
+
+  // Wheel over left timeline scrolls canvas
+  const times = timesRef.value;
+  if(times){
+    times.addEventListener("wheel", (e: WheelEvent) => {
+      if(!canvas) return;
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        canvas.scrollBy({ top: e.deltaY, behavior: "auto" });
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
 }
 
 let roA:ResizeObserver | null = null;
@@ -225,10 +260,17 @@ onMounted(async ()=>{
   weeksHeadRef.value && roA.observe(weeksHeadRef.value);
   daysHeadRef.value  && roB.observe(daysHeadRef.value);
   window.addEventListener("resize", measureHeads);
+
+  await nextTick();
+  installScrollSync();
+  scrollToToday();
 });
 onUnmounted(()=>{
   roA?.disconnect(); roB?.disconnect();
   window.removeEventListener("resize", measureHeads);
+  if(onCanvasScroll && canvasRef.value){
+    canvasRef.value.removeEventListener("scroll", onCanvasScroll);
+  }
 });
 </script>
 
@@ -241,11 +283,10 @@ onUnmounted(()=>{
       </header>
 
       <section class="board" ref="boardRef">
-        <!-- 左：时间轴 -->
-        <aside class="times">
-          <div class="times-head">小节 / 时间</div>
-          <div class="times-body">
-            <div class="shim" :style="{ height: headsH + 'px' }" />
+        <!-- Left: time axis (no shim; offset via transform for perfect alignment) -->
+        <aside class="times" ref="timesRef">
+          <div class="times-head">Class / Time</div>
+          <div class="times-body" ref="timesBodyRef">
             <div v-for="s in SLOTS" :key="s.i" class="time-row">
               <div class="no">第{{ s.i }}节</div>
               <div class="range">{{ s.t }}</div>
@@ -253,21 +294,34 @@ onUnmounted(()=>{
           </div>
         </aside>
 
-        <!-- 右：统一滚动容器 -->
-        <div class="canvas">
+        <!-- Right: single scroll container -->
+        <div class="canvas" ref="canvasRef">
           <div class="weeks-head" ref="weeksHeadRef">
             <div v-for="w in maxWeek" :key="'w'+w" class="week-tag">第 {{ w }} 周</div>
           </div>
 
           <div class="days-head" ref="daysHeadRef">
-            <div v-for="d in allDays" :key="'h'+fmtDate(d.date)" class="day-head">
-              <div class="dow">星期{{ ['一','二','三','四','五','六','日'][d.wd] }}</div>
+            <div
+              v-for="d in allDays"
+              :key="'h'+fmtDate(d.date)"
+              class="day-head"
+              :class="{ today: fmtDate(d.date) === todayKey }"
+            >
+              <div class="dow">
+                星期{{ ['一','二','三','四','五','六','日'][d.wd] }}
+              </div>
               <div class="date">{{ fmtDate(d.date) }}</div>
             </div>
           </div>
 
           <div class="days-body">
-            <div v-for="d in allDays" :key="'c'+fmtDate(d.date)" class="day-col">
+            <div
+              v-for="d in allDays"
+              :key="'c'+fmtDate(d.date)"
+              class="day-col"
+              :class="{ today: fmtDate(d.date) === todayKey }"
+              :data-date="fmtDate(d.date)"
+            >
               <div
                 v-for="c in (grid[fmtDate(d.date)] || [])"
                 :key="c.title + c.s + '-' + c.e + (c.sub||'')"
@@ -288,7 +342,6 @@ onUnmounted(()=>{
 </template>
 
 <style scoped>
-/* —— 整屏 —— */
 .bodhi-layout{min-height:100vh;display:flex;flex-direction:column}
 :global(.page-cover){display:none !important;}
 
@@ -302,36 +355,42 @@ onUnmounted(()=>{
 .title{font:700 2rem "Cinzel Decorative",serif;color:#7646ff}
 .meta{opacity:.8}
 
-/* 主板参数 */
 .board{
-  --row-h: 56px;     /* 行高 */
+  --row-h: 56px;
   --rows: 14;
-  --col-w: 240px;    /* 单日列宽（桌面） */
-  --gap: 10px;       /* 日列间距 */
+  --col-w: 240px;
+  --gap: 10px;
   --pad: 8px;
-  --weeks-h: 48px;   /* 周数条高度（回退） */
-  --dhead-h: 60px;   /* 日期头高度（回退） */
+  --weeks-h: 48px;
+  --dhead-h: 60px;
   --heads-h: calc(var(--weeks-h) + var(--dhead-h));
+  --times-w: var(--col-w);
+
   flex:1 1 auto; min-height:0;
-  display:grid; grid-template-columns: 300px 1fr; gap:12px;
+  display:grid; grid-template-columns: var(--times-w) 1fr; gap:12px;
 }
 
-/* 左侧时间轴：横线与右侧完全一致（统一用背景渐变），起点用 --heads-h 对齐 */
 .times{
   align-self:stretch; height:100%;
-  background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.1);overflow:hidden;
+  background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.1);
   display:flex; flex-direction:column;
+  margin-top:0;
+  overflow:hidden; /* clip translated body */
 }
 .times-head{
-  padding:.6rem 1rem;background:#1976d2;color:#fff;font-weight:700;text-align:center
+  padding:.4rem .8rem;
+  background:#1976d2;color:#fff;font-weight:700;text-align:center;
+  line-height:1.2; flex:0 0 auto;
 }
 .times-body{
   position:relative;
   flex:1 1 auto; min-height:0;
   display:grid;
-  grid-template-rows: var(--heads-h) repeat(var(--rows), var(--row-h));
+  /* No shim row; only true rows */
+  grid-template-rows: repeat(var(--rows), var(--row-h));
+  padding-top: 0;
 
-  /* 直接在容器背景画“行线”，起点 = 表头总高，避免 1px 漂移 */
+  /* same row-line grid as right side */
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -340,11 +399,12 @@ onUnmounted(()=>{
       #e5e7eb calc(var(--row-h) - 1px),
       #e5e7eb var(--row-h)
     );
-  background-position: left var(--heads-h);
-  background-origin: content-box;
-  background-clip: content-box;
+  background-position: left 0; /* transform will offset visually */
+
+  /* Visual offset equals sticky headers minus scrollTop => perfect alignment without blank slot */
+  transform: translateY(calc(var(--heads-h) - var(--vscroll, 0)));
+  will-change: transform;
 }
-.shim{ height: var(--heads-h); } /* 同步占位 */
 .time-row{
   display:grid; grid-template-columns:110px 1fr; align-items:center;
   height: var(--row-h);
@@ -354,7 +414,6 @@ onUnmounted(()=>{
 .no{font-weight:700;color:#333}
 .range{opacity:.9}
 
-/* 右侧统一滚动容器：触控优化 + scroll snap */
 .canvas{
   height:100%; min-width:0; overflow:auto;
   position:relative; display:grid;
@@ -362,6 +421,7 @@ onUnmounted(()=>{
   align-items:start;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
 }
 
 .weeks-head{
@@ -388,11 +448,20 @@ onUnmounted(()=>{
   padding:.2rem .4rem;
   text-align:center;display:flex;flex-direction:column;justify-content:center;gap:.1rem;
   height:100%;
+  overflow:hidden;
 }
 .day-head .dow{font-weight:800; line-height:1.1}
 .day-head .date{font-size:.9rem;opacity:.85; line-height:1.1}
 
-/* 主体网格：列吸附 + 与左侧同样的“行线” */
+.day-head.today{
+  outline: 2px solid #0ea5e9;
+  background:#cfe9ff;
+}
+.day-col.today{
+  background-color:#f0f7ff;
+  box-shadow:0 0 0 2px #0ea5e9 inset, 0 4px 14px rgba(0,0,0,.08);
+}
+
 .days-body{
   display:grid; grid-auto-flow:column; grid-auto-columns: var(--col-w);
   gap: var(--gap); padding:0 var(--pad) var(--pad) var(--pad);
@@ -404,8 +473,8 @@ onUnmounted(()=>{
   background-color:#fff; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,.08);
   padding:0;
   scroll-snap-align: start;
+  min-width:0; overflow:hidden;
 
-  /* 背景横线：与左侧完全一致（第一条线就在第一节下沿） */
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -418,36 +487,42 @@ onUnmounted(()=>{
   background-clip: content-box;
 }
 
-/* 课块 */
 .cell{
   border-radius:12px;padding:.5rem .6rem;box-shadow:0 2px 8px rgba(0,0,0,.12);
   display:flex;flex-direction:column;justify-content:center;font-size:.95rem;line-height:1.25;
+  min-width:0; overflow:hidden;
 }
 .cell.exam{ background:#d32f2f !important; color:#fff !important; }
-.cell-title{font-weight:800}
-.cell-sub{opacity:.95;font-size:.85rem;margin-top:.2rem}
-
-/* —— 响应式 —— */
-/* ≤1200px：略缩列宽与时间轴 */
-@media (max-width: 1200px){
-  .board{ grid-template-columns: 220px 1fr; }
-  .board{ --col-w: 200px; }
+.cell-title{
+  font-weight:800;
+  overflow:hidden; text-overflow:ellipsis;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  word-break:break-word;
 }
-/* ≤900px：进一步缩小；行高略减 */
+.cell-sub{
+  opacity:.95;font-size:.85rem;margin-top:.2rem;
+  overflow:hidden; text-overflow:ellipsis;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  word-break:break-word;
+}
+
+@media (max-width: 1200px){
+  .board{ --col-w: 200px; --times-w: var(--col-w); }
+  .title{ font-size:1.8rem; }
+}
+
 @media (max-width: 900px){
-  .board{ grid-template-columns: 160px 1fr; }
-  .board{ --col-w: 160px; --row-h: 52px; }
+  .board{ --col-w: 170px; --row-h: 52px; --times-w: var(--col-w); }
   .title{ font-size:1.6rem; }
   .time-row{ grid-template-columns: 80px 1fr; padding:0 .6rem; }
 }
-/* ≤600px：手机优化 —— 一列一屏，且“节次+时间”纵向排列、时间始终可见；列更窄 */
-@media (max-width: 600px){
-  .board{ grid-template-columns: 96px 1fr; }
-  .board{ --col-w: 74vw; --row-h: 48px; --gap: 8px; }
 
-  .times-head{ font-size:.9rem; padding:.5rem .6rem; }
+@media (max-width: 600px){
+  .board{ --times-w: 96px; --col-w: 44vw; --row-h: 48px; --gap: 8px; }
+
+  .times-head{ font-size:.9rem; padding:.35rem .5rem; }
   .time-row{
-    grid-template-columns: 1fr;        /* 纵向堆叠 */
+    grid-template-columns: 1fr;
     justify-items: start;
     padding:.2rem .5rem;
   }
@@ -458,11 +533,12 @@ onUnmounted(()=>{
   .cell{ font-size:.9rem; }
 }
 
-/* 暗色 */
 :global(html.dark) .times{background:#1f2937;color:#e5e7eb}
 :global(html.dark) .week-tag{background:#0ea5e9}
 :global(html.dark) .days-head{background:#0b1f33;border-color:#14324f}
 :global(html.dark) .day-head{background:#093e66;color:#e6f3ff}
+:global(html.dark) .day-head.today{background:#0a2f4e; outline-color:#38bdf8}
 :global(html.dark) .day-col{background-color:#111827;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+:global(html.dark) .day-col.today{background-color:#0a1524; box-shadow:0 0 0 2px #38bdf8 inset, 0 4px 14px rgba(0,0,0,.5)}
 :global(html.dark) .cell{box-shadow:0 2px 8px rgba(0,0,0,.5)}
 </style>
