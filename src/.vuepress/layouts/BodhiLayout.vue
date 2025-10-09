@@ -3,9 +3,11 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { withBase } from "vuepress/client";
 import Navbar from "@theme-hope/modules/navbar/components/Navbar";
 
-const SEMESTER_START_ISO = "2025-09-08"; // Monday
+const SEMESTER_START_ISO = "2025-09-08"; // Monday (Week 1)
 const SEM_START = new Date(SEMESTER_START_ISO + "T00:00:00");
+const MIN_WEEKS_TO_SHOW = 18; // 至少展示到第18周
 
+// === Slots: 14 节课的时间刻度 ===
 const ROWS = 14;
 const SLOT_MM = [
   [ 8*60,   8*60+45 ],  // 1: 08:00-08:45
@@ -41,27 +43,26 @@ const SLOTS = [
 ];
 const WD = ["一","二","三","四","五","六","日"];
 
-type WeeklyRow = {
-  course:string; weeks:string; weekday:string; periods?:string;
-  start_time?:string; end_time?:string;
-  room:string; teacher?:string; type?:string
-};
-type EventRow  = {
-  title:string; date?:string; start_time?:string; end_time?:string;
-  week?:string; weekday?:string; periods?:string; place?:string;
-  course?:string; colorKey?:string; type?:string; remark?:string; teacher?:string
+// === 数据类型（支持可选 color 列；没有也完全兼容） ===
+type RowUnified = {
+  course:string; weeks?:string; weekday?:string; date?:string;
+  periods?:string; start_time?:string; end_time?:string;
+  room?:string; teacher?:string; type?:string; content?:string;
+  color?:string;
 };
 
-const weekly = ref<WeeklyRow[]>([]);
-const events = ref<EventRow[]>([]);
+const weekly = ref<RowUnified[]>([]);
+const events = ref<RowUnified[]>([]);
 
+// === CSV 解析 ===
 function parseCSV(txt:string){
-  const lines = txt.trim().split(/\r?\n/);
-  const head = lines.shift()!.split(",");
+  const lines = txt.trim().split(/\r?\n/).filter(Boolean);
+  if(lines.length===0) return [];
+  const head = lines.shift()!.split(",").map(s=>s.trim());
   return lines.map(line=>{
-    const cells = line.split(",").map(s=>s.trim());
+    const cells = line.split(","); // 简化：不处理引号转义
     const row:any = {};
-    head.forEach((k,i)=> row[k]=cells[i] ?? "");
+    head.forEach((k,i)=> row[k]= (cells[i]??"").trim());
     return row;
   });
 }
@@ -70,16 +71,18 @@ async function loadAll(){
     fetch(withBase("/bodhi-weekly.csv")).then(r=>r.text()),
     fetch(withBase("/bodhi-events.csv")).then(r=>r.text())
   ]);
-  weekly.value = parseCSV(wTxt) as WeeklyRow[];
-  events.value = parseCSV(eTxt) as EventRow[];
+  weekly.value = parseCSV(wTxt) as RowUnified[];
+  events.value = parseCSV(eTxt) as RowUnified[];
 }
 
-function expandWeeks(expr:string):number[]{
+// === 工具函数 ===
+function expandWeeks(expr?:string):number[]{
   if(!expr) return [];
   return expr.split(",").flatMap(seg=>{
+    seg = seg.trim();
     const m = seg.match(/^(\d+)-(\d+)$/);
     if(m){ const a=+m[1],b=+m[2]; return Array.from({length:b-a+1},(_,i)=>a+i); }
-    return [+seg];
+    return seg ? [+seg] : [];
   });
 }
 function periods(expr?:string){
@@ -97,11 +100,6 @@ function toMin(hhmm?:string){
   const m = hhmm.match(/^(\d{1,2}):(\d{2})$/); if(!m) return null;
   return (+m[1])*60 + (+m[2]);
 }
-
-function hueHash(key:string){ let h=0; for(const ch of key) h=(h*33+ch.charCodeAt(0))%360; return h; }
-function colorFor(key:string){ return `hsl(${hueHash(key)} 70% 60%)`; }
-function grayify(c:string){ return `color-mix(in oklab, ${c} 35%, #999 65%)`; }
-
 function timeToPeriods(startHHMM?:string, endHHMM?:string){
   const sMin = toMin(startHHMM), eMin = toMin(endHHMM);
   if(sMin==null || eMin==null) return { s:0, e:0 };
@@ -112,10 +110,52 @@ function timeToPeriods(startHHMM?:string, endHHMM?:string){
   return { s:sIdx, e:eIdx };
 }
 
+// === 颜色策略 ===
+function hueHash(key:string){ let h=0; for(const ch of key) h=(h*33+ch.charCodeAt(0))%360; return h; }
+function colorFor(key:string){ return `hsl(${hueHash(key)} 70% 60%)`; }
+function grayify(c:string){ return `color-mix(in oklab, ${c} 35%, #999 65%)`; }
+function looksLikeColor(x?:string){
+  if(!x) return false;
+  return /^#([0-9a-fA-F]{3,8})$/.test(x)
+      || /^rgb(a)?\(/i.test(x)
+      || /^hsl(a)?\(/i.test(x)
+      || /^oklch\(/i.test(x)
+      || /^var\(/i.test(x);
+}
+function colorFromContent(content?:string){
+  if(!content) return null;
+  const m = content.match(/\{color:\s*([^}]+)\}/i);
+  return m ? m[1].trim() : null;
+}
+function stripColorTag(content?:string){
+  return (content||"").replace(/\s*\{color:\s*[^}]+\}\s*/ig, "").trim();
+}
+function tintByType(base:string, type?:string){
+  const t = (type || "").toLowerCase();
+  if(t==="exam") return "#d32f2f";
+  if(t==="demo" || t==="lab") return grayify(base);
+  if(t==="meeting") return `color-mix(in oklab, ${base} 75%, #1e88e5 25%)`;
+  if(t==="party")   return `color-mix(in oklab, ${base} 70%, #e91e63 30%)`;
+  if(t==="ds")      return `color-mix(in oklab, ${base} 75%, #673ab7 25%)`;
+  if(t==="play")    return `color-mix(in oklab, ${base} 75%, #2e7d32 25%)`;
+  return base;
+}
+function resolveColor(r:RowUnified){
+  // 1) color 列
+  if(looksLikeColor(r.color)) return r.color!;
+  // 2) content 中的颜色标记（兼容旧写法）
+  const tagged = colorFromContent(r.content);
+  if(looksLikeColor(tagged||"")) return tagged!;
+  // 3) 默认：按课程名哈希，并按 type 微调
+  const base = colorFor(r.course || r.content || r.teacher || "Bodhi");
+  return tintByType(base, r.type);
+}
+
+// === 周/日集合（至少显示到18周） ===
 const maxWeek = computed(()=>{
   const w1 = weekly.value.flatMap(r=>expandWeeks(r.weeks));
-  const w2 = events.value.flatMap(e=> e.week ? expandWeeks(e.week) : [] );
-  const maxW = Math.max(1, ...(w1.length? w1:[1]), ...(w2.length? w2:[1]));
+  const w2 = events.value.flatMap(e=> expandWeeks(e.weeks) );
+  const maxW = Math.max(MIN_WEEKS_TO_SHOW, ...(w1.length? w1:[1]), ...(w2.length? w2:[1]));
   return Math.min(30, maxW);
 });
 const allDays = computed(()=>{
@@ -129,55 +169,43 @@ const allDays = computed(()=>{
   return arr;
 });
 
+// === 网格计算（不在文字中展示 date；并剔除 content 里的 {color:...} ） ===
 type Cell = { title:string; sub?:string; s:number; e:number; color:string; isExam?:boolean };
 const grid = computed<Record<string, Cell[]>>(()=> {
   const g:Record<string,Cell[]> = {};
 
-  // weekly
-  for(const r of weekly.value){
-    const weeks = expandWeeks(r.weeks);
-    const dayIndex = wdIdx(r.weekday);
-    const p = r.periods && r.periods !== "0-0"
-      ? periods(r.periods)
-      : timeToPeriods(r.start_time, r.end_time);
-    const color = r.type==="demo" ? grayify(colorFor(r.course)) : colorFor(r.course);
-    const sub = [r.room, r.teacher].filter(Boolean).join(" · ");
-    for(const w of weeks){
-      const date = addDays(SEM_START, (w-1)*7 + dayIndex);
-      const key = fmtDate(date);
-      (g[key] ||= []).push({ title: r.course, sub, s:p.s, e:p.e, color });
-    }
-  }
+  const subFromRow = (r:RowUnified) => {
+    const cleanContent = stripColorTag(r.content);
+    const parts = [
+      cleanContent || null,
+      r.start_time && r.end_time ? `${r.start_time}—${r.end_time}` : null,
+      r.room, r.teacher
+    ].filter(Boolean);
+    return parts.join(" · ");
+  };
 
-  // events
-  for(const e of events.value){
-    const isExam = (e.type||"") === "exam";
-    const baseColor = colorFor(e.colorKey || e.course || e.title);
-    const color = isExam ? "#d32f2f" : (e.type==="demo" ? grayify(baseColor) : baseColor);
-    const subBase = [e.place, e.teacher].filter(Boolean).join(" · ");
+  const putRow = (row:RowUnified) => {
+    const p = row.periods && row.periods !== "0-0" && /^\d+(-\d+)?$/.test(row.periods)
+      ? periods(row.periods)
+      : timeToPeriods(row.start_time, row.end_time);
+    const color = resolveColor(row);
+    const sub = subFromRow(row);
+    const isExam = (row.type||"").toLowerCase()==="exam";
 
-    const derivePeriods = (et:EventRow) => {
-      if(et.periods){ return periods(et.periods); }
-      if(et.start_time && et.end_time){ return timeToPeriods(et.start_time, et.end_time); }
-      return { s:7, e:8 };
-    };
-
-    if(e.week && e.weekday){
-      const weeks = expandWeeks(e.week);
-      const dayIndex = wdIdx(e.weekday);
-      const p = derivePeriods(e);
-      const sub = e.start_time ? `${e.start_time}—${e.end_time} · ${subBase}` : subBase;
-      for(const w of weeks){
+    if(row.date){
+      const key = row.date;
+      (g[key] ||= []).push({ title: row.course, sub, s:p.s, e:p.e, color, isExam });
+    } else if(row.weeks && row.weekday){
+      const dayIndex = wdIdx(row.weekday);
+      for(const w of expandWeeks(row.weeks)){
         const key = fmtDate(addDays(SEM_START, (w-1)*7 + dayIndex));
-        (g[key] ||= []).push({ title: e.title, sub, s:p.s, e:p.e, color, isExam });
+        (g[key] ||= []).push({ title: row.course, sub, s:p.s, e:p.e, color, isExam });
       }
-    } else if(e.date){
-      const key = e.date;
-      const p = derivePeriods(e);
-      const sub = e.start_time ? `${e.start_time}—${e.end_time} · ${subBase}` : subBase;
-      (g[key] ||= []).push({ title: e.title, sub, s:p.s, e:p.e, color, isExam });
     }
-  }
+  };
+
+  for(const r of weekly.value){ putRow(r); }
+  for(const e of events.value){ putRow(e); }
 
   for(const k of Object.keys(g)){
     g[k].sort((a,b)=> a.s - b.s || a.e - b.e || a.title.localeCompare(b.title));
@@ -185,6 +213,7 @@ const grid = computed<Record<string, Cell[]>>(()=> {
   return g;
 });
 
+// === 头部/滚动 ===
 const weeksHeadRef = ref<HTMLElement | null>(null);
 const daysHeadRef  = ref<HTMLElement | null>(null);
 const boardRef     = ref<HTMLElement | null>(null);
@@ -196,7 +225,6 @@ const headsH = ref(108); // (48 + 60)
 
 function applyHeadsH(px:number){
   headsH.value = px;
-  // provide px string to CSS var users
   boardRef.value?.style.setProperty("--heads-h", `${px}px`);
 }
 function measureHeads(){
@@ -219,7 +247,6 @@ function scrollToToday() {
   canvas.scrollTo({ left, top: 0, behavior: "auto" });
 }
 
-// === Sync vertical scroll: canvas drives; timeline follows without shim ===
 let onCanvasScroll: ((ev: Event)=>void) | null = null;
 function installScrollSync(){
   const canvas = canvasRef.value;
@@ -230,12 +257,10 @@ function installScrollSync(){
 
   onCanvasScroll = () => {
     const y = Math.round(canvas.scrollTop);
-    // supply px unit to CSS var
-    timesBody.style.setProperty("--vscroll", `${y}px`);
+    timesBody.style.setProperty("--vscroll", String(y));
   };
   canvas.addEventListener("scroll", onCanvasScroll, { passive: true });
 
-  // Wheel over left timeline scrolls canvas
   const times = timesRef.value;
   if(times){
     times.addEventListener("wheel", (e: WheelEvent) => {
@@ -283,10 +308,11 @@ onUnmounted(()=>{
       </header>
 
       <section class="board" ref="boardRef">
-        <!-- Left: time axis (no shim; offset via transform for perfect alignment) -->
+        <!-- 左：时间刻度轴 -->
         <aside class="times" ref="timesRef">
           <div class="times-head">Class / Time</div>
           <div class="times-body" ref="timesBodyRef">
+            <div class="shim" :style="{ height: headsH + 'px' }" />
             <div v-for="s in SLOTS" :key="s.i" class="time-row">
               <div class="no">第{{ s.i }}节</div>
               <div class="range">{{ s.t }}</div>
@@ -294,7 +320,7 @@ onUnmounted(()=>{
           </div>
         </aside>
 
-        <!-- Right: single scroll container -->
+        <!-- 右：主画布（唯一滚动容器） -->
         <div class="canvas" ref="canvasRef">
           <div class="weeks-head" ref="weeksHeadRef">
             <div v-for="w in maxWeek" :key="'w'+w" class="week-tag">第 {{ w }} 周</div>
@@ -356,7 +382,7 @@ onUnmounted(()=>{
 .meta{opacity:.8}
 
 .board{
-  --row-h: 56px;
+  --row-h: 64px; /* 原 56px，稍微加大 */
   --rows: 14;
   --col-w: 240px;
   --gap: 10px;
@@ -386,11 +412,9 @@ onUnmounted(()=>{
   position:relative;
   flex:1 1 auto; min-height:0;
   display:grid;
-  /* No shim row; only true rows */
-  grid-template-rows: repeat(var(--rows), var(--row-h));
+  grid-template-rows: var(--heads-h) repeat(var(--rows), var(--row-h));
   padding-top: 0;
 
-  /* same row-line grid as right side */
   background-image:
     repeating-linear-gradient(
       to bottom,
@@ -399,12 +423,15 @@ onUnmounted(()=>{
       #e5e7eb calc(var(--row-h) - 1px),
       #e5e7eb var(--row-h)
     );
-  background-position: left 0; /* transform will offset visually */
+  background-position: left var(--heads-h);
+  background-origin: content-box;
+  background-clip: content-box;
 
-  /* Visual offset equals sticky headers minus scrollTop => perfect alignment without blank slot */
-  transform: translateY(calc(var(--heads-h) - var(--vscroll, 0)));
+  /* Visual scroll driven by canvas scrollTop (integer px) */
+  transform: translateY(calc(-1px * var(--vscroll, 0)));
   will-change: transform;
 }
+.shim{ height: var(--heads-h); }
 .time-row{
   display:grid; grid-template-columns:110px 1fr; align-items:center;
   height: var(--row-h);
@@ -488,8 +515,8 @@ onUnmounted(()=>{
 }
 
 .cell{
-  border-radius:12px;padding:.5rem .6rem;box-shadow:0 2px 8px rgba(0,0,0,.12);
-  display:flex;flex-direction:column;justify-content:center;font-size:.95rem;line-height:1.25;
+  border-radius:12px;padding:.6rem .7rem;box-shadow:0 2px 8px rgba(0,0,0,.12);
+  display:flex;flex-direction:column;justify-content:center;font-size:.98rem;line-height:1.28;
   min-width:0; overflow:hidden;
 }
 .cell.exam{ background:#d32f2f !important; color:#fff !important; }
@@ -500,7 +527,7 @@ onUnmounted(()=>{
   word-break:break-word;
 }
 .cell-sub{
-  opacity:.95;font-size:.85rem;margin-top:.2rem;
+  opacity:.95;font-size:.86rem;margin-top:.2rem;
   overflow:hidden; text-overflow:ellipsis;
   display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
   word-break:break-word;
@@ -512,13 +539,13 @@ onUnmounted(()=>{
 }
 
 @media (max-width: 900px){
-  .board{ --col-w: 170px; --row-h: 52px; --times-w: var(--col-w); }
+  .board{ --col-w: 170px; --row-h: 60px; --times-w: var(--col-w); }
   .title{ font-size:1.6rem; }
   .time-row{ grid-template-columns: 80px 1fr; padding:0 .6rem; }
 }
 
 @media (max-width: 600px){
-  .board{ --times-w: 96px; --col-w: 44vw; --row-h: 48px; --gap: 8px; }
+  .board{ --times-w: 96px; --col-w: 44vw; --row-h: 56px; --gap: 8px; }
 
   .times-head{ font-size:.9rem; padding:.35rem .5rem; }
   .time-row{
@@ -530,7 +557,7 @@ onUnmounted(()=>{
   .range{ font-size:.85rem; opacity:.95; line-height:1.1; }
 
   .day-head{ padding:.2rem .2rem; }
-  .cell{ font-size:.9rem; }
+  .cell{ font-size:.92rem; }
 }
 
 :global(html.dark) .times{background:#1f2937;color:#e5e7eb}
