@@ -180,8 +180,9 @@ onBeforeUnmount(()=> window.removeEventListener("resize", scrollToToday));
   <div class="bodhi-page">
     <!-- 顶部：标题 -->
     <header class="hdr">
-      <div class="title">Bodhi · 本学期课程</div>
-      <div class="meta">起始周一：{{ SEMESTER_START_ISO }}</div>
+      <div class="title">ASHOKA ERA</div>
+      <div class="meta">是诸法空相，不生不灭，不垢不净，不增不减；</div>
+      <!-- <div class="meta">起始周一：{{ SEMESTER_START_ISO }}</div> -->
     </header>
 
     <section class="board">
