@@ -9,3 +9,5 @@ category:
 
 
 TBD
+
+- [Jupyer](./jupyter.md)
