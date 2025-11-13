@@ -1,7 +1,7 @@
 ---
 title: Hanoi's Jupyter
 date: 2025-11-13
-cover: scenic.jpg
+cover: CRYCHIC.webp
 category:
   - Others
 tag:
