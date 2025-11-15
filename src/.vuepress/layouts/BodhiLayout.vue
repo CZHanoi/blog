@@ -305,8 +305,8 @@ onUnmounted(()=>{
       <header class="hdr">
         <!-- <div class="title">Bodhi · 本学期课程</div>
         <div class="meta">起始周一：{{ SEMESTER_START_ISO }}</div> -->
-        <div class="title">ASHOKA ERA</div>
-        <div class="meta">是诸法空相，不生不灭，不垢不净，不增不减；</div>
+        <div class="title">BODHI 菩提时代</div>
+        <div class="meta">I saw three ships come sailing in;</div>
       </header>
 
       <section class="board" ref="boardRef">
