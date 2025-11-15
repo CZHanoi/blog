@@ -1,7 +1,7 @@
 course,weeks,weekday,date,periods,start_time,end_time,room,teacher,type,content,color
 妇产科示教,9,五,2025-11-07,7-9,13:30,16:30,实训基地,教研室,exam,, 
 Jounal Club-YJT,1-18,三,, ,20:00,22:00,,,meeting,Jounal Club-YJT,#FFD54F
-Group Meeting-YJT,1-18,日,,1-2,09:00,10:00,,,meeting,Group Meeting-YJT,#FFD54F
+Group Meeting-YJT,1-18,日,,1-2,,,,,meeting,Group Meeting-YJT 9:00,#FFD54F
 Group Meeting-DWQ,1-8,四,, ,20:00,21:00,,,meeting,Group Meeting-DWQ,#FFF59D
 Group Meeting-DWQ,9-18,五,, ,20:00,21:00,,,meeting,Group Meeting-DWQ,#FFF59D
 Group Meeting-DS,1-8,五,, ,21:00,22:30,,,meeting,Group Meeting-DS,#64B5F6
