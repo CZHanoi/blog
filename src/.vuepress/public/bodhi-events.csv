@@ -4,10 +4,10 @@ Jounal Club-YJT,1-18,三,, ,20:00,22:00,,,meeting,Jounal Club-YJT,#FFD54F
 Group Meeting-YJT,1-18,日,,1-2,,,,,meeting,Group Meeting-YJT 9:00,#FFD54F
 Group Meeting-DWQ,1-8,四,, ,20:00,21:00,,,meeting,Group Meeting-DWQ,#FFF59D
 Group Meeting-DWQ,9-18,五,, ,20:00,21:00,,,meeting,Group Meeting-DWQ,#FFF59D
-Group Meeting-DS,1-8,五,, ,21:00,22:30,,,meeting,Group Meeting-DS,#64B5F6
-Group Meeting-DS,9-13,五,, ,22:30,23:30,,,meeting,Group Meeting-DS,#64B5F6
-Group Meeting-DS-Mine,14,五,, ,22:30,23:30,,,meeting,Group Meeting-DS,#EF522E
-Group Meeting-DS,15-18,五,, ,22:30,23:30,,,meeting,Group Meeting-DS,#64B5F6
+Group Meeting-DS,1-8,五,,,21:00,22:30,,,meeting,Group Meeting-DS,#64B5F6
+Group Meeting-DS,9-13,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#64B5F6
+Group Meeting-DS-Mine,14,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#EF522E
+Group Meeting-DS,15-18,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#64B5F6
 Cne to One-DS,1-7,日,, ,21:00,21:30,,,meeting,Cne to One-XS,#64B5F6
 Cne to One-DS,8-18,日,, ,21:30,22:30,,,meeting,Cne to One-XS,#64B5F6
 English iShow,8-18,二,, ,18:00,21:00,,,meeting,English iShow 周二,#EE822F
