@@ -57,6 +57,7 @@ export default navbar([
   },
   {
     text: "Dropsonde",
+    link: "/dropsonde/",
     icon: "fa6-solid:torii-gate",
     prefix: "/dropsonde/",
     children: [],
