@@ -60,6 +60,10 @@ export default navbar([
     link: "/dropsonde/",
     icon: "fa6-solid:torii-gate",
     prefix: "/dropsonde/",
-    children: [],
+    children: [
+      { text: "Drop!!!!!", link: "", icon: "fa6-solid:hurricane },
+
+
+    ],
   },
 ]);
