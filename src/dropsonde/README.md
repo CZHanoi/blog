@@ -12,10 +12,11 @@ article: true
 
 <blockquote style="font-style: italic; font-size: 1.2rem; margin-top: 10px; color: #555;">
     "For lust of knowing what should not be known,<br>
-    We take the golden travel to Samarkand."
+    We make the Golden Journey to Samarkand."
     <br>
     <span style="font-size: 0.9rem; color: #777;">— James Elroy Flecker, <em>The Golden Journey to Samarkand</em> (1913)</span>
 </blockquote>
+
 
 
 <Badge text="Alpha" type="warn"/>
