@@ -32,7 +32,9 @@ export default navbar([
     prefix: "/history/",
     children: [],
   },
-  { text: 'Bodhi', link: '/bodhi/' },
+  { text: 'Bodhi',
+    icon: 'fa6-solid:dharmachakra',
+    link: '/bodhi/' },
 
   // ────────── 命名表 ──────────
   {
@@ -43,7 +45,7 @@ export default navbar([
 
   // ────────── 金雨计划 ──────────
   {
-    text: "金雨计划",
+    text: "金雨",
     icon: "fa6-solid:fish-fins",
     prefix: "/golden-rain/",
     children: [
@@ -52,5 +54,11 @@ export default navbar([
       { text: "ST",                   link: "st/" },
       { text: "Others",               link: "others/" },
     ],
+  },
+  {
+    text: "Dropsonde",
+    icon: "fa6-solid:torii-gate",
+    prefix: "/dropsonde/",
+    children: [],
   },
 ]);

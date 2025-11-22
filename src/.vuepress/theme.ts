@@ -18,7 +18,7 @@ export default hopeTheme({
   docsDir: "src",
   editLink: false,
 
-  repoDisplay: false,
+  repoDisplay: true,
   // navbar
   navbar,
 

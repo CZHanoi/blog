@@ -15,8 +15,6 @@ article: true
 
 
 
-[TOC]
-
 链接指路:[SCENIC+ Stein Aerts lab seminar.](https://www.youtube.com/watch?v=QW63LLd1XC8&t=2079s)
 
 讲解者：Seppe De Winter，文章的二作，来自巨无霸的[Stein Aerts Lab - VIB - KULeuven](https://aertslab.org/)组
