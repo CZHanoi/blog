@@ -1,4 +1,18 @@
+---
+title: Milton Envs
+date: 2025-05-12
+category:
+  - Multi-Omics & ATAC
+tag:
+  - scRNAseq
+  - simulation
+  - multi-omics
+  - GRNs
+  - nature-methods
+star: true
+article: false
 
+---
 
 
 
