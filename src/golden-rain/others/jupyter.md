@@ -3,7 +3,7 @@ title: Hanoi's Jupyter
 date: 2025-11-13
 cover: CRYCHIC.webp
 category:
-  - Others
+  - Oracle
 tag:
   - Manager
 star: true
