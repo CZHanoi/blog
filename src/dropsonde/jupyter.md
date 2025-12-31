@@ -15,7 +15,7 @@ article: true
 
 ## 运行
 
-```
+```bash
 mamba activate base
 
 nohup jupyter lab --port=2222 --no-browser 2>&1 >log_jupyter_2222nodecw7.log &
@@ -36,5 +36,11 @@ nohup jupyter lab --port=1614 --no-browser 2>&1 >log_jupyter_1614nodecw11.log &
 nohup jupyter lab --port=1224 --no-browser 2>&1 >log_jupyter_1224nodecw12.log &
 nohup jupyter lab --port=1330 --no-browser 2>&1 >log_jupyter_1330nodecw13.log &
 
+```
+
+
+
+```bash
+python -m ipykernel install --user --name=merfish --display-name "Python310 (merfish)"
 ```
 
