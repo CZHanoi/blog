@@ -10,6 +10,7 @@ export default navbar([
     icon: "pen-to-square",
     prefix: "/medicine/",
     children: [
+      { text: "治安疏「2026」", link: "", icon: "fa6-solid:hurricane" },
       { text: "养生主", link: "yangshengzhu/" },
     ],
   },
