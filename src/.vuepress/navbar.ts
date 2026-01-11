@@ -33,9 +33,9 @@ export default navbar([
     prefix: "/history/",
     children: [],
   },
-  { text: 'Bodhi',
+  { text: 'Ashoka',
     icon: 'fa6-solid:dharmachakra',
-    link: '/bodhi/' },
+    link: '/ashoka/' },
 
   // ────────── 命名表 ──────────
   {
