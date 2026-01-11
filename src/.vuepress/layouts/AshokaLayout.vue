@@ -236,8 +236,8 @@ function measureHeads(){
   const a = weeksHeadRef.value;
   const b = daysHeadRef.value;
   if(!a || !b) return;
-  const ax = a.getBoundingClientRect().height;
-  const bx = b.getBoundingClientRect().height;
+  const ax = Math.round(a.getBoundingClientRect().height);
+  const bx = Math.round(b.getBoundingClientRect().height);
   applyHeadsH(ax + bx);
 }
 
@@ -306,7 +306,6 @@ onUnmounted(()=>{
 
 <template>
   <div class="ashoka-layout">
-    <Navbar />
     <div class="ashoka-page">
       <header class="hdr">
         <!-- <div class="title">Bodhi · 本学期课程</div>
@@ -320,6 +319,7 @@ onUnmounted(()=>{
         <aside class="times" ref="timesRef">
           <div class="times-head">Class / Time</div>
           <div class="times-body" ref="timesBodyRef">
+            <div class="shim" :style="{ height: headsH + 'px' }" />
             <div v-for="s in SLOTS" :key="s.i" class="time-row">
               <div class="no">第{{ s.i }}节</div>
               <div class="range">{{ s.t }}</div>
@@ -379,7 +379,7 @@ onUnmounted(()=>{
 :global(.page-cover){display:none !important;}
 
 .ashoka-page{
-  min-height:calc(100vh - var(--navbar-height)); display:flex; flex-direction:column; overflow:hidden;
+  height:100vh; display:flex; flex-direction:column; overflow:hidden;
 }
 .hdr{
   flex:0 0 auto; display:flex; justify-content:space-between; align-items:flex-end;
@@ -414,16 +414,12 @@ onUnmounted(()=>{
   padding:.4rem .8rem;
   background:#1976d2;color:#fff;font-weight:700;text-align:center;
   line-height:1.2; flex:0 0 auto;
-  height: var(--heads-h);
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
 .times-body{
   position:relative;
   flex:1 1 auto; min-height:0;
   display:grid;
-  grid-template-rows: repeat(var(--rows), var(--row-h));
+  grid-template-rows: var(--heads-h) repeat(var(--rows), var(--row-h));
   padding-top: 0;
 
   background-image:
@@ -434,7 +430,7 @@ onUnmounted(()=>{
       #e5e7eb calc(var(--row-h) - 1px),
       #e5e7eb var(--row-h)
     );
-  background-position: left 0;
+  background-position: left var(--heads-h);
   background-origin: content-box;
   background-clip: content-box;
 
@@ -442,6 +438,7 @@ onUnmounted(()=>{
   transform: translateY(calc(-1px * var(--vscroll, 0)));
   will-change: transform;
 }
+.shim{ height: var(--heads-h); }
 .time-row{
   display:grid; grid-template-columns:110px 1fr; align-items:center;
   height: var(--row-h);
