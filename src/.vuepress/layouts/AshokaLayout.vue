@@ -312,7 +312,7 @@ onUnmounted(()=>{
         <!-- <div class="title">Bodhi · 本学期课程</div>
         <div class="meta">起始周一：{{ SEMESTER_START_ISO }}</div> -->
         <div class="title">ASHOKA 阿育王时代</div>
-        <div class="meta">I saw three ships come sailing in;</div>
+        <div class="meta">For unto us a child is born, unto us a son is given;</div>
       </header>
 
       <section class="board" ref="boardRef">
@@ -414,7 +414,7 @@ onUnmounted(()=>{
 }
 .times-head{
   height: var(--heads-h);
-  padding:.4rem .8rem;
+  padding:.0rem .8rem;
   background:#1976d2;color:#fff;font-weight:700;text-align:center;
   line-height:1.2; flex:0 0 auto;
   display:flex; align-items:center; justify-content:center;
