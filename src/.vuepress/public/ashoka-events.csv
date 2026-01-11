@@ -1,0 +1,33 @@
+course,weeks,weekday,date,periods,start_time,end_time,room,teacher,type,content,color
+妇产科示教,9,五,2025-11-07,7-9,13:30,16:30,实训基地,教研室,exam,, 
+Jounal Club-YJT,1-18,三,, ,20:00,22:00,,,meeting,Jounal Club-YJT,#FFD54F
+Group Meeting-YJT,1-18,日,,1-2,,,,,meeting,Group Meeting-YJT 9:00,#FFD54F
+Group Meeting-DWQ,1-8,四,, ,20:00,21:00,,,meeting,Group Meeting-DWQ,#FFF59D
+Group Meeting-DWQ,9-18,五,, ,20:00,21:00,,,meeting,Group Meeting-DWQ,#FFF59D
+Group Meeting-DS,1-8,五,,,21:00,22:30,,,meeting,Group Meeting-DS,#64B5F6
+Group Meeting-DS,9-10,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#64B5F6
+Group Meeting-DS,11-11,四,,14,,,,,meeting,DS 22:30-23:30,#64B5F6
+Group Meeting-DS,12-13,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#64B5F6
+Group Meeting-DS-Mine,14,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#EF522E
+Group Meeting-DS,15-18,五,,14,22:30,23:30,,,meeting,DS 22:30-23:30,#64B5F6
+Cne to One-DS,1-7,日,, ,21:00,21:30,,,meeting,Cne to One-XS,#64B5F6
+Cne to One-DS,8-18,日,, ,21:30,22:30,,,meeting,Cne to One-XS,#64B5F6
+English iShow,8-18,二,, ,18:00,21:00,,,meeting,English iShow 周二,#EE822F
+English iShow,8-18,日,,3-9,9:00,18:00,,,meeting,English iShow 周日,#EE822F
+流行病学-期末,,,2025-12-15,,09:55,11:55, , ,exam,, 
+内科学B（下）-期末,,,2025-12-29,,13:00,15:00,,,exam,, 
+外科学B（下）-期末,,,2026-01-07,,15:30,17:30,,,exam,, 
+儿科学B-期末,,,2026-01-04,,08:30,10:30,,,exam,, 
+妇产科学B-期末,,,2025-12-31,,13:00,15:00,,,exam,, 
+传染病学B-期末,,,2026-01-05,,13:00,15:00,,,exam,, 
+走进临床从医之道-期末,,,2026-01-09,,13:00,15:00,,,exam,, 
+外教iShow,8-18,一,, ,21:00,21:20,,,meeting,English iShow,#BB822F
+外教iShow,8-10,四,, ,21:30,21:50,,,meeting,English iShow,#BB822F
+外教iShow,11-11,四,,12,,,,,meeting,English iShow 21:30-21:50,#BB822F
+外教iShow,12-18,四,, ,21:30,21:50,,,meeting,English iShow,#BB822F
+体测,10,六,2025-11-15,,8:30,11:15,,,exam,50m,#33FF2F
+体测,10,六,2025-11-15,,13:00,15:45,,,exam,1000m 立定跳远,#33FF2F
+复旦乐跑,11,六,2025-11-22,,9:00,10:45,邯郸校区-光华楼前广场,,meeting,3.3km 健康跑,#33FF2F
+杨柳师姐-wgs的大数据检查,11,四,2025-11-20,13,,,,,meeting,22:00-22:30,#33FF2F
+AI赋能理解细胞命运,11,五,2025-11-21,8-9,,,元创中心513,,meeting,汪伟旭 15:30-17:00,#33FF2F
+ishow小组组会,11,六,2025-11-22,10,,,腾讯会议,,meeting,不知道嘛事 19:00-19:40,#DDFFD2
