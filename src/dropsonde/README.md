@@ -29,11 +29,11 @@ article: true
 |      Phanfone      | 巴蓬(盼风) |     Wenqun Ding     |      |
 |       Faxai        |    法茜    |     Yining Hao      |      |
 |      Vongfong      |    黄蜂    |        Xu Su        |      |
-|       Melor        |    茉莉    |                     |      |
+|       Maemi        |    鸣蝉    |        空转         |      |
 |       Sarika       |   莎莉嘉   |        学习         |      |
 |       Haima        |    海马    |      学习附属       |      |
 |      Meranti       |   莫兰蒂   |    **ATAC-GRN**     |      |
-|       Imbudo       |   伊布都   |                     |      |
+|      Hagibis       |   海贝思   |      整合分析       |      |
 |       Tembin       |    天秤    |         LLM         |      |
 |      Doksuri       |   杜苏芮   | **单细胞序列-突变** |      |
 |       Saola        |    苏拉    |      虚拟细胞       |      |
