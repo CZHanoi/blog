@@ -21,7 +21,11 @@ export RSTUDIO_WHICH_R="$(mamba run -n Otaku which R)"
 /Applications/RStudio.app/Contents/MacOS/RStudio &
 ```
 
+其中`Otaku`可以替换为你的虚拟环境名
 
+
+
+## 下面是这个环节的安装和配置过程。
 
 ```
 mamba create -n Otaku r-base r-seurat r-signac scanpy -c bioconda
