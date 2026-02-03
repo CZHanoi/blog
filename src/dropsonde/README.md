@@ -23,23 +23,23 @@ article: true
 
 
 
-| International name |   中文名   |     领队      |  Ps  |
-| :----------------: | :--------: | :-----------: | :--: |
-|      Kammuri       |    北冕    | Dongyuan Song |      |
-|      Phanfone      | 巴蓬(盼风) |  Wenqun Ding  |      |
-|       Faxai        |    法茜    |  Yining Hao   |      |
-|      Vongfong      |    黄蜂    |     Xu Su     |      |
-|       Melor        |    茉莉    |               |      |
-|       Sarika       |   莎莉嘉   |     学习      |      |
-|       Haima        |    海马    |   学习附属    |      |
-|      Meranti       |   莫兰蒂   |               |      |
-|       Imbudo       |   伊布都   |               |      |
-|       Tembin       |    天秤    |      LLM      |      |
-|      Tingting      |    婷婷    |               |      |
-|       Xinxin       |    欣欣    |               |      |
-|      Mujigae       |    彩虹    |   Yi Zhang    |      |
-|        Goni        |    天鹅    |   Liu Yang    |      |
-|                    |            |               |      |
+| International name |   中文名   |        领队         |  Ps  |
+| :----------------: | :--------: | :-----------------: | :--: |
+|      Kammuri       |    北冕    |    Dongyuan Song    |      |
+|      Phanfone      | 巴蓬(盼风) |     Wenqun Ding     |      |
+|       Faxai        |    法茜    |     Yining Hao      |      |
+|      Vongfong      |    黄蜂    |        Xu Su        |      |
+|       Maemi        |    鸣蝉    |        空转         |      |
+|       Sarika       |   莎莉嘉   |        学习         |      |
+|       Haima        |    海马    |      学习附属       |      |
+|      Meranti       |   莫兰蒂   |    **ATAC-GRN**     |      |
+|      Hagibis       |   海贝思   |      整合分析       |      |
+|       Tembin       |    天秤    |         LLM         |      |
+|      Doksuri       |   杜苏芮   | **单细胞序列-突变** |      |
+|       Saola        |    苏拉    |      虚拟细胞       |      |
+|      Mujigae       |    彩虹    |      Yi Zhang       |      |
+|        Goni        |    天鹅    |      Liu Yang       |      |
+|                    |            |                     |      |
 
 
 
