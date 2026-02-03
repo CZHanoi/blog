@@ -63,7 +63,8 @@ export default navbar([
     prefix: "/dropsonde/",
     children: [
       { text: "Drop!!!!!", link: "", icon: "fa6-solid:hurricane" },
-      { text: "Jupyter", link: "jupyter.html", icon: "fa6-solid:laptop-code" }
+      { text: "Jupyter", link: "jupyter.html", icon: "fa6-solid:laptop-code" },
+      { text: "Otaku", link: "otaku.html", icon: "fa6-solid:gamepad" },
 
 
     ],
