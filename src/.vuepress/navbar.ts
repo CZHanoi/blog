@@ -30,8 +30,12 @@ export default navbar([
   {
     text: "碑",
     icon: "monument",
-    prefix: "/history/",
-    children: [],
+    prefix: "/code/",
+    children: [
+      { text: "序: Dentate gyrus", link: "", icon: "fa6-solid:head-side-brain" },
+      { text: "Convert",   link: "convert/", icon: "fa6-solid:arrow-right-arrow-left" },
+
+    ],
   },
   { text: 'Ashoka',
     icon: 'fa6-solid:dharmachakra',
@@ -62,9 +66,9 @@ export default navbar([
     icon: "fa6-solid:torii-gate",
     prefix: "/dropsonde/",
     children: [
-      { text: "Drop!!!!!", link: "", icon: "fa6-solid:hurricane" },
+      { text: "序: Drop!!!!!", link: "", icon: "fa6-solid:hurricane" },
       { text: "Jupyter", link: "jupyter.html", icon: "fa6-solid:laptop-code" },
-      { text: "Otaku", link: "otaku.html", icon: "fa6-solid:gamepad" },
+      { text: "Otaku-R", link: "otaku.html", icon: "fa6-solid:gamepad" },
 
 
     ],
