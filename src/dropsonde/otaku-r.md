@@ -14,7 +14,7 @@ article: true
 
 ## Otaku
 
-每次启动之时
+每次打开一个新的终端时
 
 ```bash
 export RSTUDIO_WHICH_R="$(mamba run -n Otaku which R)"
@@ -25,9 +25,11 @@ export RSTUDIO_WHICH_R="$(mamba run -n Otaku which R)"
 
 
 
-## 下面是这个环节的安装和配置过程。
+## 环境配置
 
-```
+下面是这个环节的安装和配置过程:
+
+```bash
 mamba create -n Otaku r-base r-seurat r-signac scanpy -c bioconda
 mamba activate Otaku
 R
@@ -38,9 +40,9 @@ remotes::install_github("mojaveazure/seurat-disk")
 
 ```
 
+查看R的地址:
 
-
-```
+```bash
 (Otaku) hanoi@Hanois-MacBook-Air ~ % which R      
 /Users/hanoi/miniforge3/envs/Otaku/bin/R
 (Otaku) hanoi@Hanois-MacBook-Air ~ % python -c "import sys; print(sys.executable)"
