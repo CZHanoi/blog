@@ -12,25 +12,31 @@ const MIN_WEEKS_TO_SHOW = Math.max(
   Math.ceil((SEM_END.getTime() - SEM_START.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
 );
 
-// === Slots: 14 节课的时间刻度 ===
-const ROWS = 14;
+// === Slots: 16 节课的时间刻度（新增第0节与第15节） ===
+const ROWS = 16;
+const PERIOD_OFFSET = 1; // 新增第0节后：CSV里第1节对应网格第2行
+
 const SLOT_MM = [
-  [ 8*60,   8*60+45 ],  // 1: 08:00-08:45
-  [ 8*60+55,9*60+40 ],  // 2: 08:55-09:40
-  [ 9*60+55,10*60+40 ], // 3: 09:55-10:40
-  [ 10*60+50,11*60+35], // 4: 10:50-11:35
-  [ 11*60+45,12*60+30], // 5: 11:45-12:30
-  [ 13*60+30,14*60+15], // 6: 13:30-14:15
-  [ 14*60+25,15*60+10], // 7: 14:25-15:10
-  [ 15*60+20,16*60+5 ], // 8: 15:20-16:05
-  [ 16*60+15,17*60    ],// 9: 16:15-17:00
-  [ 17*60+10,17*60+55], // 10: 17:10-17:55
-  [ 18*60+30,19*60+15], // 11: 18:30-19:15
-  [ 19*60+25,20*60+10], // 12: 19:25-20:10
-  [ 20*60+20,21*60+5 ], // 13: 20:20-21:05
-  [ 21*60+15,22*60   ], // 14: 21:15-22:00
+  [ 6*60+30, 7*60+30 ],  // 0: 06:30-07:30
+  [ 8*60,    8*60+45 ],  // 1: 08:00-08:45
+  [ 8*60+55, 9*60+40 ],  // 2: 08:55-09:40
+  [ 9*60+55, 10*60+40 ], // 3: 09:55-10:40
+  [ 10*60+50,11*60+35 ], // 4: 10:50-11:35
+  [ 11*60+45,12*60+30 ], // 5: 11:45-12:30
+  [ 13*60+30,14*60+15 ], // 6: 13:30-14:15
+  [ 14*60+25,15*60+10 ], // 7: 14:25-15:10
+  [ 15*60+20,16*60+5  ], // 8: 15:20-16:05
+  [ 16*60+15,17*60     ],// 9: 16:15-17:00
+  [ 17*60+10,17*60+55 ], // 10: 17:10-17:55
+  [ 18*60+30,19*60+15 ], // 11: 18:30-19:15
+  [ 19*60+25,20*60+10 ], // 12: 19:25-20:10
+  [ 20*60+20,21*60+5  ], // 13: 20:20-21:05
+  [ 21*60+15,22*60    ], // 14: 21:15-22:00
+  [ 22*60+30,23*60+30 ], // 15: 22:30-23:30
 ];
+
 const SLOTS = [
+  { i:0,  t:"06:30-07:30" }, // ✅新增
   { i:1,  t:"08:00-08:45" },
   { i:2,  t:"08:55-09:40" },
   { i:3,  t:"09:55-10:40" },
@@ -45,7 +51,9 @@ const SLOTS = [
   { i:12, t:"19:25-20:10" },
   { i:13, t:"20:20-21:05" },
   { i:14, t:"21:15-22:00" },
+  { i:15, t:"22:30-23:30" }, // ✅新增
 ];
+
 const WD = ["一","二","三","四","五","六","日"];
 
 // === 数据类型（支持可选 color 列；没有也完全兼容） ===
@@ -90,13 +98,17 @@ function expandWeeks(expr?:string):number[]{
     return seg ? [+seg] : [];
   });
 }
+
+// periods：把 CSV 的“第x节”映射到网格行号（新增第0节后整体 +1）
+// 例如：CSV 1-2 => 网格 2-3；CSV 0 => 网格 1
 function periods(expr?:string){
   let m = expr?.match?.(/^(\d+)-(\d+)$/);
-  if(m) return { s:+m[1], e:+m[2] };
+  if(m) return { s:+m[1] + PERIOD_OFFSET, e:+m[2] + PERIOD_OFFSET };
   m = expr?.match?.(/^(\d+)$/);
-  if(m) return { s:+m[1], e:+m[1] };
+  if(m) return { s:+m[1] + PERIOD_OFFSET, e:+m[1] + PERIOD_OFFSET };
   return { s:0, e:0 };
 }
+
 function wdIdx(wd:string){ return Math.max(0, WD.indexOf(wd)); }
 function addDays(d:Date, n:number){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
 function fmtDate(d:Date){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
@@ -105,6 +117,8 @@ function toMin(hhmm?:string){
   const m = hhmm.match(/^(\d{1,2}):(\d{2})$/); if(!m) return null;
   return (+m[1])*60 + (+m[2]);
 }
+
+// timeToPeriods 直接输出“网格行号”(1..ROWS)，不需要额外 offset
 function timeToPeriods(startHHMM?:string, endHHMM?:string){
   const sMin = toMin(startHHMM), eMin = toMin(endHHMM);
   if(sMin==null || eMin==null) return { s:0, e:0 };
@@ -190,7 +204,7 @@ const grid = computed<Record<string, Cell[]>>(()=> {
   };
 
   const putRow = (row:RowUnified) => {
-    const p = row.periods && row.periods !== "0-0" && /^\d+(-\d+)?$/.test(row.periods)
+    const p = row.periods && /^\d+(-\d+)?$/.test(row.periods)
       ? periods(row.periods)
       : timeToPeriods(row.start_time, row.end_time);
     const color = resolveColor(row);
@@ -392,7 +406,7 @@ onUnmounted(()=>{
 
 .board{
   --row-h: 64px; /* 原 56px，稍微加大 */
-  --rows: 14;
+  --rows: 16;    /* ✅原 14：新增第0节与第15节 */
   --col-w: 240px;
   --gap: 10px;
   --pad: 8px;
