@@ -3,8 +3,8 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from "vue";
 import { withBase } from "vuepress/client";
 import Navbar from "@theme-hope/modules/navbar/components/Navbar";
 
-const SEMESTER_START_ISO = "2026-01-11";
-const SEMESTER_END_ISO = "2026-02-28";
+const SEMESTER_START_ISO = "2026-03-01";
+const SEMESTER_END_ISO = "2026-07-05";
 const SEM_START = new Date(SEMESTER_START_ISO + "T00:00:00");
 const SEM_END = new Date(SEMESTER_END_ISO + "T00:00:00");
 const MIN_WEEKS_TO_SHOW = Math.max(

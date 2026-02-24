@@ -25,6 +25,12 @@ export RSTUDIO_WHICH_R="$(mamba run -n Otaku which R)"
 
 
 
+```R
+setwd("/Users/hanoi/2026/Goni/")
+```
+
+
+
 ## 环境配置
 
 下面是这个环节的安装和配置过程:
