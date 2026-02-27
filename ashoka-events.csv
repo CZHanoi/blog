@@ -2,6 +2,8 @@ course,weeks,weekday,date,periods,start_time,end_time,room,teacher,type,content,
 Journal Club-YJT,1-18,三,, ,20:00,22:00,,,meeting,JC-YJT,#FFD54F
 Group Meeting-YJT,1-18,日,,1-2,,,,,meeting,GM-YJT 9:00,#FFD54F
 Group Meeting-DWQ,1-18,五,,12,20:00,21:00,,,meeting,GM-DWQ,#FFF59D
-Group Meeting-ISTBI,1-18,五,,13-14,21:00,21:30,,,meeting,GM-ISTBI,#FFD54F
-Group Meeting-DS,1-18,五,,15,22:30,23:30,,,meeting,GM-DS,#64B5F6
+Group Meeting-ISTBI,1,五,,13,21:00,21:30,,,meeting,GM-ISTBI,#FFD54F
+Group Meeting-DS,1,五,,14,21:30,22:30,,,meeting,GM-DS,#64B5F6
+Group Meeting-DS,2-18,五,,13,20:30,21:30,,,meeting,GM-DS,#64B5F6
+Group Meeting-ISTBI,2-18,五,,14,21:00,21:30,,,meeting,GM-ISTBI,#FFD54F
 Cne to One-DS,1-18,日,, ,21:00,21:30,,,meeting,Cne to One-XS,#64B5F6
