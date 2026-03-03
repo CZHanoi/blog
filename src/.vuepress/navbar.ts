@@ -69,6 +69,8 @@ export default navbar([
       { text: "序: Drop!!!!!", link: "", icon: "fa6-solid:hurricane" },
       { text: "Jupyter", link: "jupyter.html", icon: "fa6-solid:laptop-code" },
       { text: "Otaku-R", link: "otaku-r.html", icon: "fa6-solid:gamepad" },
+      { text: "Mamba ", link: "mamba.html", icon: "fa6-solid:snake" },
+      { text: "scp", link: "scp.html", icon: "fa6-solid:alicorn" },
 
 
     ],
