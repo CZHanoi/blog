@@ -4,11 +4,11 @@ import navbar from "./navbar.js";
 import sidebar from "./sidebar.js";
 
 export default hopeTheme({
-  hostname: "https://czhanoi.github.io/blog/",
+  hostname: "https://czhanoi.github.io/",
 
   author: {
     name: "CZHanoi",
-    url: "https://czhanoi.github.io/blog/",
+    url: "https://czhanoi.github.io/",
   },
 
   logo: "./logo.png",
