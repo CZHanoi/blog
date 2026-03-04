@@ -7,7 +7,7 @@ category:
 tag:
   - Manager
 star: False
-article: true
+article: False
 ---
 
 
