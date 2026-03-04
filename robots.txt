@@ -2,4 +2,4 @@
 User-agent:*
 Disallow:
 
-Sitemap: https://czhanoi.github.io/blog/sitemap.xml
+Sitemap: https://czhanoi.github.io/sitemap.xml
