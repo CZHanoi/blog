@@ -5,7 +5,7 @@ import theme from "./theme.js";
 import { path } from "@vuepress/utils";
 
 export default defineUserConfig({
-  base: "/blog/",
+  base: "/",
 
   lang: "en-US",
   title: "CZHanoi",
