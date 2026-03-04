@@ -1,5 +1,5 @@
 ---
-cover: /assets/images/Udan.png
+cover: /assets/images/ottoman.jpg
 title:  墓①计划
 icon: fish-fins
 index: false
@@ -7,12 +7,17 @@ article: true
 ---
 
 <blockquote style="font-style: italic; font-size: 1.2rem; margin-top: 10px; color: #555;">
-    "Things always seem fairer when we look back at them, and it is out of that inaccessible tower of the past that Longing leans and beckons."
+    "Here let us all for death prepare,<br>
+    Or on the last great journey fare."
     <br>
-    <span style="font-size: 0.9rem; color: #777;">— James Russell Lowell, <em>Literary Essays, vol. I (1864-1890)</em>, A Few Bits of Roman Mosaic</span>
+    <span style="font-size: 0.9rem; color: #777;">
+        — Vālmīki, <em>Rāmāyaṇa</em> (Ayodhyā-kāṇḍa 2.47.7); English verse trans. Ralph T. H. Griffith, <em>The Ramayana</em>, Book II, Canto XLVII (“The Citizens’ Return”)
+    </span>
+    <br>
+    <span style="font-size: 0.9rem; color: #777;">
+        Sanskrit: इहैव निधनं यामो महाप्रस्थानमेव वा।
+    </span>
 </blockquote>
-
-<Badge text="Alpha" type="warn"/>
 
 **临时计划**
 
