@@ -8,6 +8,7 @@ tag:
 index: true
 star: true 
 article: true
+sticky: 98
 ---
 
 <blockquote style="font-style: italic; font-size: 1.2rem; margin-top: 10px; color: #555;">
