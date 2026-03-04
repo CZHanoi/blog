@@ -1,12 +1,12 @@
 ---
-title: Mamba 
+title: 杂记
 date: 2026-03-02
 cover: CRYCHIC.webp
 category:
   - Oracle
 tag:
   - Manager
-star: true
+star: False
 article: true
 ---
 

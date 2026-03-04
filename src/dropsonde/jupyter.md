@@ -6,7 +6,7 @@ category:
   - Oracle
 tag:
   - Manager
-star: true
+star: False
 article: true
 
 ---
