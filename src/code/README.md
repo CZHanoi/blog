@@ -1,6 +1,6 @@
 ---
 cover: /assets/images/ottoman.jpg
-title:  墓①计划
+title:  翰蛰内战
 icon: fish-fins
 index: false
 article: true
