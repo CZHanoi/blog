@@ -34,7 +34,7 @@ grep -Ev 'git\+https://github.com/aertslab/|^(annoy|pybedtools|pyBigWig|pybigtoo
   scenicplus/requirements.txt > /tmp/scenicplus.req
 
 
-python -m pip install -U pip setuptools wheel setuptools-scm
+python -m pip install -U pip "setuptools==79.0.1" wheel setuptools-scm
 python -m pip install -r /tmp/scenicplus.req
 
 python -m pip install --no-deps ./pySCENIC ./LoomXpy ./pycistarget ./pycisTopic ./scenicplus
