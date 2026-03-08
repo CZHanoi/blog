@@ -37,6 +37,8 @@ grep -Ev 'git\+https://github.com/aertslab/|^(annoy|pybedtools|pyBigWig|pybigtoo
 python -m pip install -U pip "setuptools==79.0.1" wheel setuptools-scm
 python -m pip install -r /tmp/scenicplus.req
 
+#  python -m pip install --force-reinstall "igraph==0.11.4" "leidenalg==0.10.2" "pybedtools==0.9.1" "pybigtools==0.1.2" "pysam==0.22.0" "tables==3.9.2" --no-deps
+
 python -m pip install --no-deps ./pySCENIC ./LoomXpy ./pycistarget ./pycisTopic ./scenicplus
 ```
 
@@ -47,5 +49,12 @@ python - <<'PY'
 import scenicplus, pycisTopic, pycistarget, pyscenic, loomxpy
 print("SCENIC+ install OK")
 PY
+```
+
+④后续
+
+```bash
+mamba install ipykernel
+python -m ipykernel install --user --name=mujigae --display-name "Mujigae Py311"
 ```
 
